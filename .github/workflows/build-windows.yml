@@ -1,0 +1,116 @@
+name: Build Windows Binary
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main, master ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-windows:
+    name: Build Windows Binary
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+        targets: x86_64-pc-windows-msvc
+        
+    - name: Cache cargo registry
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-
+          
+    - name: Run tests
+      run: cargo test --verbose
+      
+    - name: Build release binary
+      run: cargo build --release --target x86_64-pc-windows-msvc
+      
+    - name: Create release directory
+      run: |
+        mkdir release
+        copy target\x86_64-pc-windows-msvc\release\windows-port-viewer.exe release\
+        copy README.md release\
+        
+    - name: Create version info
+      run: |
+        echo "Windows Port Viewer" > release\VERSION.txt
+        echo "Build Date: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" >> release\VERSION.txt
+        echo "Commit: ${{ github.sha }}" >> release\VERSION.txt
+        echo "Branch: ${{ github.ref_name }}" >> release\VERSION.txt
+      shell: powershell
+      
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: windows-port-viewer-${{ github.sha }}
+        path: release/
+        retention-days: 30
+        
+    - name: Create release package
+      if: startsWith(github.ref, 'refs/tags/')
+      run: |
+        Compress-Archive -Path release\* -DestinationPath windows-port-viewer-${{ github.ref_name }}-windows.zip
+      shell: powershell
+      
+    - name: Create GitHub Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: windows-port-viewer-${{ github.ref_name }}-windows.zip
+        name: Windows Port Viewer ${{ github.ref_name }}
+        body: |
+          ## Windows Port Viewer ${{ github.ref_name }}
+          
+          ### Features
+          - List TCP and UDP network connections
+          - Display process names for each connection
+          - Filter by protocol (TCP/UDP) and port number
+          - Clean tabular output format
+          - English interface and documentation
+          
+          ### Installation
+          1. Download the `windows-port-viewer-${{ github.ref_name }}-windows.zip` file
+          2. Extract the contents to a folder
+          3. Run `windows-port-viewer.exe` from command line
+          
+          ### Usage
+          ```
+          # Show all connections
+          windows-port-viewer.exe
+          
+          # Show only TCP connections
+          windows-port-viewer.exe --protocol tcp
+          
+          # Filter by specific port
+          windows-port-viewer.exe --port 443
+          
+          # Show help
+          windows-port-viewer.exe --help
+          ```
+          
+          ### System Requirements
+          - Windows 10 or later
+          - Administrator privileges recommended for full process name resolution
+          
+          Built from commit: ${{ github.sha }}
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
