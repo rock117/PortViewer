@@ -209,6 +209,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "windows-port-viewer"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "windows",
+]
+
+[[package]]
 name = "windows-result"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -250,14 +258,6 @@ dependencies = [
  "windows_x86_64_gnu",
  "windows_x86_64_gnullvm",
  "windows_x86_64_msvc",
-]
-
-[[package]]
-name = "windows-tool"
-version = "0.1.0"
-dependencies = [
- "clap",
- "windows",
 ]
 
 [[package]]

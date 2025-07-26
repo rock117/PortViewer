@@ -2,28 +2,18 @@ use std::ffi::c_void;
 use windows::Win32::NetworkManagement::IpHelper::*;
 use windows::Win32::Foundation::*;
 use windows::Win32::Networking::WinSock::*;
+use windows::Win32::System::Threading::*;
 use clap::{Arg, Command};
-
-#[derive(Debug)]
-struct ConnectionInfo {
-    protocol: String,
-    local_address: String,
-    local_port: u16,
-    remote_address: String,
-    remote_port: u16,
-    state: String,
-    pid: u32,
-}
 
 fn main() {
     let matches = Command::new("windows-tool")
-        .about("Windows端口占用查看工具")
+        .about("Windows Port Usage Viewer")
         .arg(
             Arg::new("protocol")
                 .short('p')
                 .long("protocol")
                 .value_name("PROTOCOL")
-                .help("指定协议类型 (tcp, udp, all)")
+                .help("Specify protocol type (tcp, udp, all)")
                 .default_value("all")
         )
         .arg(
@@ -31,16 +21,16 @@ fn main() {
                 .short('P')
                 .long("port")
                 .value_name("PORT")
-                .help("过滤指定端口")
+                .help("Filter by specific port")
         )
         .get_matches();
 
     let protocol = matches.get_one::<String>("protocol").unwrap();
     let filter_port = matches.get_one::<String>("port").map(|s| s.parse::<u16>().ok()).flatten();
 
-    println!("Windows 端口占用情况:");
-    println!("{:<8} {:<22} {:<22} {:<12} {:<8}", "协议", "本地地址", "远程地址", "状态", "PID");
-    println!("{}", "-".repeat(80));
+    println!("Windows Port Usage:");
+    println!("{:<8} {:<22} {:<22} {:<12} {:<8} {:<20}", "Protocol", "Local Address", "Remote Address", "State", "PID", "Process Name");
+    println!("{}", "-".repeat(110));
 
     match protocol.as_str() {
         "tcp" => list_tcp_connections(filter_port),
@@ -50,7 +40,7 @@ fn main() {
             list_udp_connections(filter_port);
         }
         _ => {
-            eprintln!("不支持的协议类型: {}", protocol);
+            eprintln!("Unsupported protocol type: {}", protocol);
             std::process::exit(1);
         }
     }
@@ -60,7 +50,7 @@ fn list_tcp_connections(filter_port: Option<u16>) {
     unsafe {
         let mut size = 0u32;
         
-        // 首先获取所需的缓冲区大小
+        // First get the required buffer size
         GetExtendedTcpTable(
             None,
             &mut size,
@@ -105,6 +95,7 @@ fn list_tcp_connections(filter_port: Option<u16>) {
             let remote_port = u16::from_be(entry.dwRemotePort as u16);
             let state = format_tcp_state(entry.dwState);
             let pid = entry.dwOwningPid;
+            let process_name = get_process_name(pid);
 
             // 应用端口过滤
             if let Some(port) = filter_port {
@@ -114,12 +105,13 @@ fn list_tcp_connections(filter_port: Option<u16>) {
             }
 
             println!(
-                "{:<8} {:<22} {:<22} {:<12} {:<8}",
+                "{:<8} {:<22} {:<22} {:<12} {:<8} {:<20}",
                 "TCP",
                 format!("{}:{}", local_addr, local_port),
                 if remote_port == 0 { "*:*".to_string() } else { format!("{}:{}", remote_addr, remote_port) },
                 state,
-                pid
+                pid,
+                process_name
             );
         }
     }
@@ -171,6 +163,7 @@ fn list_udp_connections(filter_port: Option<u16>) {
             let local_addr = format_ip_address(entry.dwLocalAddr);
             let local_port = u16::from_be(entry.dwLocalPort as u16);
             let pid = entry.dwOwningPid;
+            let process_name = get_process_name(pid);
 
             // 应用端口过滤
             if let Some(port) = filter_port {
@@ -180,12 +173,13 @@ fn list_udp_connections(filter_port: Option<u16>) {
             }
 
             println!(
-                "{:<8} {:<22} {:<22} {:<12} {:<8}",
+                "{:<8} {:<22} {:<22} {:<12} {:<8} {:<20}",
                 "UDP",
                 format!("{}:{}", local_addr, local_port),
                 "*:*",
                 "LISTENING",
-                pid
+                pid,
+                process_name
             );
         }
     }
@@ -194,6 +188,40 @@ fn list_udp_connections(filter_port: Option<u16>) {
 fn format_ip_address(addr: u32) -> String {
     let bytes = addr.to_le_bytes();
     format!("{}.{}.{}.{}", bytes[0], bytes[1], bytes[2], bytes[3])
+}
+
+fn get_process_name(pid: u32) -> String {
+    unsafe {
+        // 尝试打开进程
+        let process_handle = match OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid) {
+            Ok(handle) => handle,
+            Err(_) => return "<Unknown>".to_string(),
+        };
+
+        // 获取进程可执行文件路径
+        let mut buffer = [0u16; 260]; // MAX_PATH
+        let mut size = buffer.len() as u32;
+        
+        let result = QueryFullProcessImageNameW(
+            process_handle, 
+            PROCESS_NAME_WIN32, 
+            windows::core::PWSTR(buffer.as_mut_ptr()), 
+            &mut size
+        );
+        let _ = CloseHandle(process_handle);
+        
+        if result.is_ok() && size > 0 {
+            // 将UTF-16转换为String并提取文件名
+            let path = String::from_utf16_lossy(&buffer[..size as usize]);
+            if let Some(filename) = path.split('\\').last() {
+                filename.to_string()
+            } else {
+                path
+            }
+        } else {
+            "<Unknown>".to_string()
+        }
+    }
 }
 
 fn format_tcp_state(state: u32) -> String {
