@@ -6,7 +6,7 @@ use windows::Win32::System::Threading::*;
 use clap::{Arg, Command};
 
 fn main() {
-    let matches = Command::new("windows-tool")
+    let matches = Command::new("windows-port-viewer")
         .about("Windows Port Usage Viewer")
         .arg(
             Arg::new("protocol")
@@ -64,7 +64,7 @@ fn list_tcp_connections(filter_port: Option<u16>) {
             return;
         }
 
-        // 分配缓冲区
+        // allocate buffer
         let mut buffer = vec![0u8; size as usize];
         let result = GetExtendedTcpTable(
             Some(buffer.as_mut_ptr() as *mut c_void),
@@ -76,7 +76,7 @@ fn list_tcp_connections(filter_port: Option<u16>) {
         );
 
         if result != 0 {
-            eprintln!("获取TCP连接表失败: {}", result);
+            eprintln!("Failed to obtain TCP connection table: {}", result);
             return;
         }
 
@@ -97,7 +97,7 @@ fn list_tcp_connections(filter_port: Option<u16>) {
             let pid = entry.dwOwningPid;
             let process_name = get_process_name(pid);
 
-            // 应用端口过滤
+            // apply port filter
             if let Some(port) = filter_port {
                 if local_port != port && remote_port != port {
                     continue;
@@ -121,7 +121,7 @@ fn list_udp_connections(filter_port: Option<u16>) {
     unsafe {
         let mut size = 0u32;
         
-        // 首先获取所需的缓冲区大小
+        // get required buffer size
         GetExtendedUdpTable(
             None,
             &mut size,
@@ -135,7 +135,7 @@ fn list_udp_connections(filter_port: Option<u16>) {
             return;
         }
 
-        // 分配缓冲区
+        // allocate buffer
         let mut buffer = vec![0u8; size as usize];
         let result = GetExtendedUdpTable(
             Some(buffer.as_mut_ptr() as *mut c_void),
@@ -147,7 +147,7 @@ fn list_udp_connections(filter_port: Option<u16>) {
         );
 
         if result != 0 {
-            eprintln!("获取UDP连接表失败: {}", result);
+            eprintln!("Failed to obtain UDP connection table: {}", result);
             return;
         }
 
@@ -165,7 +165,7 @@ fn list_udp_connections(filter_port: Option<u16>) {
             let pid = entry.dwOwningPid;
             let process_name = get_process_name(pid);
 
-            // 应用端口过滤
+            // apply port filter
             if let Some(port) = filter_port {
                 if local_port != port {
                     continue;
@@ -192,13 +192,13 @@ fn format_ip_address(addr: u32) -> String {
 
 fn get_process_name(pid: u32) -> String {
     unsafe {
-        // 尝试打开进程
+        // try to open process
         let process_handle = match OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid) {
             Ok(handle) => handle,
             Err(_) => return "<Unknown>".to_string(),
         };
 
-        // 获取进程可执行文件路径
+        // get process executable file path
         let mut buffer = [0u16; 260]; // MAX_PATH
         let mut size = buffer.len() as u32;
         
@@ -211,7 +211,7 @@ fn get_process_name(pid: u32) -> String {
         let _ = CloseHandle(process_handle);
         
         if result.is_ok() && size > 0 {
-            // 将UTF-16转换为String并提取文件名
+            // convert UTF-16 to String and extract filename
             let path = String::from_utf16_lossy(&buffer[..size as usize]);
             if let Some(filename) = path.split('\\').last() {
                 filename.to_string()
