@@ -43,22 +43,47 @@
       </div>
 
       <!-- Action Buttons -->
-      <div class="flex items-center gap-3">
-        <!-- Auto Refresh Toggle -->
-        <div class="flex items-center">
-          <input 
-            type="checkbox" 
-            id="autoRefresh"
-            :checked="autoRefresh"
-            @change="toggleAutoRefresh"
-            class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-          />
-          <label for="autoRefresh" class="ml-2 text-sm text-gray-700">
-            Auto Refresh
-          </label>
+      <div class="flex items-center gap-4">
+        <!-- Auto Refresh Settings -->
+        <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border">
+          <!-- Auto Refresh Toggle -->
+          <div class="flex items-center">
+            <input 
+              type="checkbox" 
+              id="autoRefresh"
+              :checked="autoRefresh"
+              @change="toggleAutoRefresh"
+              class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+            />
+            <label for="autoRefresh" class="ml-2 text-sm font-medium text-gray-700 cursor-pointer">
+              Auto Refresh
+            </label>
+          </div>
+
+          <!-- Refresh Interval Selector -->
+          <div class="flex items-center gap-2" v-if="autoRefresh">
+            <span class="text-sm text-gray-600">Every</span>
+            <select 
+              :value="refreshIntervalSeconds"
+              @change="setRefreshInterval(parseInt(($event.target as HTMLSelectElement).value))"
+              class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="2">2s</option>
+              <option value="5">5s</option>
+              <option value="10">10s</option>
+              <option value="30">30s</option>
+              <option value="60">1m</option>
+            </select>
+          </div>
+
+          <!-- Auto Refresh Status -->
+          <div class="flex items-center gap-1" v-if="autoRefresh">
+            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span class="text-xs text-green-600">Active</span>
+          </div>
         </div>
 
-        <!-- Refresh Button -->
+        <!-- Manual Refresh Button -->
         <button 
           @click="fetchConnections" 
           :disabled="isLoading"
@@ -73,7 +98,7 @@
           >
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          {{ isLoading ? 'Loading...' : 'Refresh' }}
+          {{ isLoading ? 'Loading...' : 'Refresh Now' }}
         </button>
       </div>
     </div>
@@ -88,9 +113,11 @@ interface Props {
     process: string
   }
   autoRefresh: boolean
+  refreshIntervalSeconds: number
   isLoading: boolean
   updateFilter: (key: string, value: string) => void
   toggleAutoRefresh: () => void
+  setRefreshInterval: (seconds: number) => void
   fetchConnections: () => void
 }
 

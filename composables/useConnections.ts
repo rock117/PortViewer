@@ -1,3 +1,4 @@
+import { ref, computed, watch, onUnmounted, readonly } from 'vue'
 import type { ConnectionInfo } from '~/plugins/tauri.client'
 
 export interface FilterState {
@@ -16,8 +17,9 @@ export const useConnections = () => {
   const filteredConnections = ref<ConnectionInfo[]>([])
   const isLoading = ref(false)
   const error = ref<string | null>(null)
-  const autoRefresh = ref(true)
+  const autoRefresh = ref(false)
   const refreshInterval = ref<NodeJS.Timeout | null>(null)
+  const refreshIntervalSeconds = ref(5) // Default 5 seconds
 
   const filters = ref<FilterState>({
     protocol: 'all',
@@ -152,7 +154,7 @@ export const useConnections = () => {
       if (autoRefresh.value) {
         fetchConnections()
       }
-    }, 5000) // Refresh every 5 seconds
+    }, refreshIntervalSeconds.value * 1000) // Use configurable interval
   }
 
   const stopAutoRefresh = () => {
@@ -168,6 +170,14 @@ export const useConnections = () => {
       startAutoRefresh()
     } else {
       stopAutoRefresh()
+    }
+  }
+
+  const setRefreshInterval = (seconds: number) => {
+    refreshIntervalSeconds.value = seconds
+    if (autoRefresh.value) {
+      // Restart with new interval
+      startAutoRefresh()
     }
   }
 
@@ -190,10 +200,12 @@ export const useConnections = () => {
     filters,
     sortConfig: readonly(sortConfig),
     autoRefresh,
+    refreshIntervalSeconds: readonly(refreshIntervalSeconds),
     fetchConnections,
     sortBy,
     updateFilter,
     toggleAutoRefresh,
+    setRefreshInterval,
     startAutoRefresh,
     stopAutoRefresh
   }

@@ -38,9 +38,11 @@
       <FiltersCard 
         :filters="filters"
         :auto-refresh="autoRefresh"
+        :refresh-interval-seconds="refreshIntervalSeconds"
         :is-loading="isLoading"
         :update-filter="updateFilter"
         :toggle-auto-refresh="toggleAutoRefresh"
+        :set-refresh-interval="setRefreshInterval"
         :fetch-connections="fetchConnections"
       />
 
@@ -93,10 +95,12 @@ const {
   filters,
   sortConfig,
   autoRefresh,
+  refreshIntervalSeconds,
   fetchConnections,
   sortBy,
   updateFilter,
   toggleAutoRefresh,
+  setRefreshInterval,
   startAutoRefresh
 } = useConnections()
 
