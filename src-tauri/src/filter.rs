@@ -1,4 +1,4 @@
-use crate::models::{ConnectionInfo, Protocol, ConnectionState};
+use crate::models::{ConnectionInfo, Protocol};
 
 pub fn filter_connections(connections: &[ConnectionInfo], protocol: &str, filter_port: Option<u16>) -> Vec<ConnectionInfo> {
     connections.iter()
