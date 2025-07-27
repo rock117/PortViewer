@@ -20,12 +20,13 @@ pub fn get_all_connections() -> Vec<ConnectionInfo> {
 
 pub fn get_tcp_connections() -> Vec<ConnectionInfo> {
     let mut connections = Vec::new();
+    println!("[DEBUG] Starting TCP connection retrieval...");
     
     unsafe {
         let mut size = 0u32;
         
         // First get the required buffer size
-        GetExtendedTcpTable(
+        let initial_result = GetExtendedTcpTable(
             None,
             &mut size,
             FALSE,
@@ -33,8 +34,11 @@ pub fn get_tcp_connections() -> Vec<ConnectionInfo> {
             TCP_TABLE_OWNER_PID_ALL,
             0,
         );
+        
+        println!("[DEBUG] TCP table size query result: {}, required size: {} bytes", initial_result, size);
 
         if size == 0 {
+            println!("[DEBUG] TCP table size is 0, returning empty connections");
             return connections;
         }
 
@@ -50,12 +54,13 @@ pub fn get_tcp_connections() -> Vec<ConnectionInfo> {
         );
 
         if result != 0 {
-            eprintln!("Failed to obtain TCP connection table: {}", result);
+            eprintln!("[ERROR] Failed to obtain TCP connection table: {}", result);
             return connections;
         }
 
         let table_ptr = buffer.as_ptr() as *const u32;
         let num_entries = *table_ptr;
+        println!("[DEBUG] TCP table retrieved successfully, found {} entries", num_entries);
         
         // Skip the dwNumEntries field and get to the actual entries
         let entries_ptr = table_ptr.add(1) as *const MIB_TCPROW_OWNER_PID;

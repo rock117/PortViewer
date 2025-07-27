@@ -43,7 +43,15 @@ impl From<ConnectionInfo> for ConnectionInfoSerde {
 #[tauri::command]
 fn get_connections() -> Vec<ConnectionInfoSerde> {
     let connections = get_all_connections();
-    connections.into_iter().map(ConnectionInfoSerde::from).collect()
+    println!("Backend: Retrieved {} total connections", connections.len());
+    
+    let tcp_count = connections.iter().filter(|c| matches!(c.protocol, crate::models::Protocol::TCP)).count();
+    let udp_count = connections.iter().filter(|c| matches!(c.protocol, crate::models::Protocol::UDP)).count();
+    println!("Backend: TCP connections: {}, UDP connections: {}", tcp_count, udp_count);
+    
+    let result: Vec<ConnectionInfoSerde> = connections.into_iter().map(ConnectionInfoSerde::from).collect();
+    println!("Backend: Returning {} serialized connections", result.len());
+    result
 }
 
 // Tauri command to get filtered connections
