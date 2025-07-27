@@ -11,9 +11,11 @@ pub fn filter_connections(connections: &[ConnectionInfo], protocol: &str, filter
                 _ => false,
             };
             
-            // Filter by port if specified
+            // Filter by port if specified (using string prefix matching)
             let port_match = if let Some(port) = filter_port {
-                conn.local_port == port || conn.remote_port == port
+                let port_str = port.to_string();
+                conn.local_port.to_string().starts_with(&port_str) || 
+                conn.remote_port.to_string().starts_with(&port_str)
             } else {
                 true
             };

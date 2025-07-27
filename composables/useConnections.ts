@@ -81,12 +81,13 @@ export const useConnections = () => {
       )
     }
 
-    // Port filter
+    // Port filter (using string prefix matching)
     if (filters.value.port) {
-      const portNum = parseInt(filters.value.port)
-      if (!isNaN(portNum)) {
+      const portStr = filters.value.port.trim()
+      if (portStr) {
         filtered = filtered.filter(conn => 
-          conn.local_port === portNum || conn.remote_port === portNum
+          conn.local_port.toString().startsWith(portStr) || 
+          conn.remote_port.toString().startsWith(portStr)
         )
       }
     }
