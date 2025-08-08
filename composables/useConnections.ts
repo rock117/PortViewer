@@ -1,4 +1,4 @@
-import { ref, computed, watch, onUnmounted, readonly } from 'vue'
+import { ref, computed, watch, readonly, onUnmounted } from 'vue'
 import type { ConnectionInfo } from '~/plugins/tauri.client'
 
 export interface FilterState {
@@ -55,13 +55,18 @@ export const useConnections = () => {
 
   // Fetch connections from Tauri backend
   const fetchConnections = async () => {
-    try {
+    // Only show loading state if we don't have existing data (first load)
+    if (connections.value.length === 0) {
       isLoading.value = true
+    }
+    
+    try {
       error.value = null
       
       const { $tauri } = useNuxtApp()
       const data = await $tauri.getConnections()
       
+      // Smooth data update to prevent jitter
       connections.value = data
       applyFilters()
     } catch (err) {
@@ -86,11 +91,29 @@ export const useConnections = () => {
     // Port filter (using string prefix matching)
     if (filters.value.port) {
       const portStr = filters.value.port.trim()
+      console.log('🔍 Port filter search:', portStr)
+      
       if (portStr) {
-        filtered = filtered.filter(conn => 
-          conn.local_port.toString().startsWith(portStr) || 
-          conn.remote_port.toString().startsWith(portStr)
-        )
+        const beforeCount = filtered.length
+        filtered = filtered.filter(conn => {
+          const localMatch = conn.local_port.toString().startsWith(portStr)
+          const remoteMatch = conn.remote_port.toString().startsWith(portStr)
+          const result = localMatch || remoteMatch
+          
+          // Debug specific cases
+          if (result) {
+            console.log(`✅ Match found: ${conn.local_port}/${conn.remote_port} matches "${portStr}"`, {
+              local_port: conn.local_port,
+              remote_port: conn.remote_port,
+              localMatch,
+              remoteMatch
+            })
+          }
+          
+          return result
+        })
+        
+        console.log(`📊 Port filter: ${beforeCount} → ${filtered.length} connections`)
       }
     }
 

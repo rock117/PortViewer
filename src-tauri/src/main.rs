@@ -39,6 +39,21 @@ impl From<ConnectionInfo> for ConnectionInfoSerde {
     }
 }
 
+// Tauri command for frontend logging
+#[tauri::command]
+fn log_message(level: String, message: String, data: Option<String>) {
+    let timestamp = chrono::Utc::now().format("%Y-%m-%d %H:%M:%S");
+    match level.as_str() {
+        "error" => eprintln!("[{}] [FRONTEND ERROR] {}", timestamp, message),
+        "debug" => println!("[{}] [FRONTEND DEBUG] {}", timestamp, message),
+        _ => println!("[{}] [FRONTEND] {}", timestamp, message),
+    }
+    
+    if let Some(data_str) = data {
+        println!("[{}] [FRONTEND DATA] {}", timestamp, data_str);
+    }
+}
+
 // Tauri command to get all connections
 #[tauri::command]
 fn get_connections() -> Vec<ConnectionInfoSerde> {
@@ -64,7 +79,7 @@ fn get_filtered_connections(protocol: String, port: Option<u16>) -> Vec<Connecti
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![get_connections, get_filtered_connections])
+        .invoke_handler(tauri::generate_handler![get_connections, get_filtered_connections, log_message])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

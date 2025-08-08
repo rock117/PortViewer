@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-lg shadow-md overflow-hidden">
+  <div class="bg-white rounded-lg shadow-md overflow-hidden min-h-96">
     <!-- Table Header -->
     <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
       <h3 class="text-lg font-semibold text-gray-900">Active Connections</h3>
@@ -9,9 +9,60 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="isLoading" class="flex items-center justify-center py-12">
-      <div class="loading-spinner mr-3"></div>
-      <span class="text-gray-600">Loading connections...</span>
+    <div v-if="isLoading" class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200 table-fixed">
+        <colgroup>
+          <col class="w-20"> <!-- Protocol -->
+          <col class="w-32"> <!-- Local Address -->
+          <col class="w-20"> <!-- Local Port -->
+          <col class="w-32"> <!-- Remote Address -->
+          <col class="w-20"> <!-- Remote Port -->
+          <col class="w-24"> <!-- State -->
+          <col class="w-16"> <!-- PID -->
+          <col class="w-auto"> <!-- Process -->
+        </colgroup>
+        <thead class="table-header">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Protocol</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Local Address</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Local Port</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remote Address</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remote Port</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">State</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PID</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Process</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <!-- Skeleton rows -->
+          <tr v-for="n in 8" :key="n" class="animate-pulse">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="h-4 bg-gray-200 rounded w-12"></div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="h-4 bg-gray-200 rounded w-24"></div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="h-4 bg-gray-200 rounded w-16"></div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="h-4 bg-gray-200 rounded w-24"></div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="h-4 bg-gray-200 rounded w-16"></div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="h-6 bg-gray-200 rounded-full w-20"></div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="h-4 bg-gray-200 rounded w-12"></div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="h-4 bg-gray-200 rounded w-32"></div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <!-- Error State -->
@@ -41,7 +92,17 @@
 
     <!-- Table -->
     <div v-else class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
+      <table class="min-w-full divide-y divide-gray-200 table-fixed">
+        <colgroup>
+          <col class="w-20"> <!-- Protocol -->
+          <col class="w-32"> <!-- Local Address -->
+          <col class="w-20"> <!-- Local Port -->
+          <col class="w-32"> <!-- Remote Address -->
+          <col class="w-20"> <!-- Remote Port -->
+          <col class="w-24"> <!-- State -->
+          <col class="w-16"> <!-- PID -->
+          <col class="w-auto"> <!-- Process -->
+        </colgroup>
         <thead class="table-header">
           <tr>
             <th @click="sortBy('protocol')" class="px-6 py-3 text-left cursor-pointer hover:bg-gray-100 transition-colors">
@@ -95,20 +156,30 @@
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="connection in filteredConnections" :key="`${connection.protocol}-${connection.local_port}-${connection.pid}`" class="hover:bg-gray-50 transition-colors">
-            <td class="table-cell">
-              <span class="font-medium text-blue-600 uppercase">{{ connection.protocol }}</span>
+          <tr v-for="connection in filteredConnections" :key="`${connection.protocol}-${connection.local_port}-${connection.pid}`" class="hover:bg-gray-50 transition-all duration-150 ease-in-out">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 uppercase">
+              {{ connection.protocol }}
             </td>
-            <td class="table-cell font-mono text-sm">{{ connection.local_address }}</td>
-            <td class="table-cell font-mono">{{ connection.local_port }}</td>
-            <td class="table-cell font-mono text-sm">{{ connection.remote_address || '-' }}</td>
-            <td class="table-cell font-mono">{{ connection.remote_port || '-' }}</td>
-            <td class="table-cell">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
+              {{ connection.local_address }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
+              {{ connection.local_port }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
+              {{ connection.remote_address || '-' }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
+              {{ connection.remote_port || '-' }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
               <StatusBadge :state="connection.state" />
             </td>
-            <td class="table-cell font-mono">{{ connection.pid }}</td>
-            <td class="table-cell">
-              <span class="font-medium text-gray-900">{{ connection.process_name || 'Unknown' }}</span>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
+              {{ connection.pid }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 truncate">
+              {{ connection.process_name || 'Unknown' }}
             </td>
           </tr>
         </tbody>

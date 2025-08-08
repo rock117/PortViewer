@@ -27,6 +27,11 @@
       "csp": null
     }
   },
+  "plugins": {
+    "devtools": {
+      "detach": true
+    }
+  },
   "bundle": {
     "active": false
   }

@@ -14,9 +14,16 @@ export default defineNuxtConfig({
   
   // Build configuration for Tauri
   nitro: {
+    preset: 'static',
     output: {
+      dir: 'dist',
       publicDir: 'dist'
     }
+  },
+  
+  // Generate static files
+  generate: {
+    dir: 'dist'
   },
   
   // CSS framework
