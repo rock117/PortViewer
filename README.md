@@ -1,81 +1,166 @@
 # Windows Port Viewer
 
-A powerful command-line tool for viewing network port usage on Windows systems, built with Rust.
+🚧 **项目开发中 | Project in Development** 🚧
 
-## Features
+A modern desktop application for monitoring network port usage on Windows systems, built with **Rust + Tauri 2 + Nuxt 3**.
 
+## 🔄 Development Status
+
+**Current Version**: `v0.1.0-dev`  
+**Status**: 🟡 **Active Development**  
+**Last Updated**: 2025-01-08
+
+### ✅ Completed Features
+- ✅ Rust backend with Windows API integration
+- ✅ Real-time TCP/UDP connection monitoring
+- ✅ Process name resolution and PID tracking
+- ✅ Modern Nuxt 3 frontend with Vue.js components
+- ✅ Tauri 2 desktop application framework
+- ✅ Protocol filtering (TCP/UDP/All)
+- ✅ Port number filtering with prefix matching
+- ✅ Process name filtering
+- ✅ Auto-refresh with configurable intervals
+- ✅ Responsive UI with Tailwind CSS
+- ✅ Connection statistics and sorting
+- ✅ Anti-jitter UI improvements
+
+### 🚧 In Progress
+- 🔄 Frontend debugging and console logging improvements
+- 🔄 UI/UX polish and performance optimization
+- 🔄 Release mode configuration and testing
+
+### 📋 Planned Features
+- 📅 Connection history tracking
+- 📅 Export functionality (CSV/JSON)
+- 📅 Network traffic monitoring
+- 📅 Advanced filtering and search
+- 📅 System tray integration
+- 📅 Dark/Light theme toggle
+- 📅 Multi-language support
+
+## 🎆 Features
+
+### 🖥️ Desktop Application
+- **Modern GUI**: Built with Tauri 2 for native desktop performance
+- **Vue.js Frontend**: Responsive and interactive user interface
+- **Real-time Updates**: Live connection monitoring with configurable refresh intervals
+- **Cross-platform Ready**: Tauri framework supports future multi-platform deployment
+
+### 🔍 Network Monitoring
 - **Comprehensive Port Monitoring**: Display all TCP and UDP connections with detailed information
 - **Process Name Resolution**: Shows the executable name for each process using network ports
-- **Protocol Filtering**: Filter connections by protocol type (TCP, UDP, or both)
-- **Port Filtering**: Filter connections by specific port numbers
-- **Real-time Information**: Shows current connection states and process details
-- **Clean Output Format**: Well-formatted table output for easy reading
+- **Connection Statistics**: Real-time statistics with connection counts and states
+- **Smart Filtering**: Protocol, port, and process name filtering with intelligent matching
 
-## Installation
+### 🎨 User Experience
+- **Clean Modern UI**: Tailwind CSS styling with responsive design
+- **Anti-jitter Technology**: Smooth updates without layout shifts
+- **Sortable Tables**: Click column headers to sort connections
+- **Loading States**: Skeleton loading and smooth transitions
+
+## 🛠️ Technology Stack
+
+### Backend
+- **Rust**: High-performance system programming language
+- **Windows API**: Direct integration with Windows networking APIs
+- **Tauri 2**: Modern desktop application framework
+
+### Frontend
+- **Nuxt 3**: Vue.js framework with SSR/SSG capabilities
+- **Vue.js 3**: Composition API and reactive components
+- **Tailwind CSS**: Utility-first CSS framework
+- **TypeScript**: Type-safe JavaScript development
+
+## 💻 Development Setup
 
 ### Prerequisites
 
-- Windows operating system
-- Rust toolchain (install from [rustup.rs](https://rustup.rs/))
+- **Windows 10/11**: Required for Windows API access
+- **Rust Toolchain**: Install from [rustup.rs](https://rustup.rs/)
+- **Node.js**: Version 18+ for frontend development
+- **Tauri CLI**: Install with `cargo install tauri-cli`
 
-### Building from Source
+### Development Environment
 
-1. Clone or download this repository
-2. Navigate to the project directory
-3. Build the project:
-
+1. **Clone the repository**:
 ```bash
-cargo build --release
+git clone <repository-url>
+cd windows-port-viewer
 ```
 
-4. The executable will be available at `target/release/windows-tool.exe`
-
-## Usage
-
-### Basic Usage
-
-Display all network connections:
+2. **Install frontend dependencies**:
 ```bash
-cargo run
+npm install
 ```
 
-### Command Line Options
-
+3. **Run in development mode**:
 ```bash
-cargo run -- [OPTIONS]
+cargo tauri dev
 ```
 
-**Options:**
-- `-p, --protocol <PROTOCOL>`: Specify protocol type (tcp, udp, all) [default: all]
-- `-P, --port <PORT>`: Filter by specific port number
-- `-h, --help`: Print help information
-
-### Examples
-
-**Show all connections:**
+4. **Build for production**:
 ```bash
-cargo run
+npm run build
+cargo tauri build
 ```
 
-**Show only TCP connections:**
+### 📝 Development Notes
+
+- **Frontend Dev Server**: Runs on `http://localhost:1420`
+- **Hot Reload**: Both Rust backend and Nuxt frontend support hot reload
+- **Debug Console**: Use `F12` in dev mode to access browser developer tools
+- **Build Output**: Production builds are located in `src-tauri/target/release/`
+
+## 🚀 Usage
+
+### Running the Application
+
+**Development Mode** (with hot reload):
 ```bash
-cargo run -- --protocol tcp
+cargo tauri dev
 ```
 
-**Show only UDP connections:**
+**Production Build**:
 ```bash
-cargo run -- --protocol udp
+# Build the application
+npm run build
+cargo tauri build
+
+# Run the built executable
+.\src-tauri\target\release\windows-port-viewer.exe
 ```
 
-**Filter by specific port (e.g., MySQL port 3306):**
+### 🎮 User Interface
+
+#### Main Features
+1. **Connection Table**: View all active TCP/UDP connections
+2. **Filter Controls**: 
+   - Protocol dropdown (All/TCP/UDP)
+   - Port search box (supports prefix matching)
+   - Process name search
+3. **Auto Refresh**: Configurable intervals (2s, 5s, 10s, 30s, 1m)
+4. **Statistics Panel**: Real-time connection counts
+5. **Sorting**: Click column headers to sort data
+
+#### Keyboard Shortcuts
+- `F12`: Open developer tools (development mode)
+- `Ctrl+R`: Manual refresh
+- `Esc`: Clear filters
+
+### 🔧 Advanced Usage
+
+#### Debug Mode
+For troubleshooting and development:
 ```bash
-cargo run -- --port 3306
+# Enable debug logging
+RUST_LOG=debug cargo tauri dev
+
+# View console output in release mode
+.\src-tauri\target\release\windows-port-viewer.exe > debug.log 2>&1
 ```
 
-**Show TCP connections on port 80:**
-```bash
-cargo run -- --protocol tcp --port 80
-```
+#### Custom Configuration
+The application supports various configuration options through the Tauri config file (`src-tauri/tauri.conf.json`).
 
 ## Output Format
 
@@ -163,18 +248,80 @@ To see more process names, consider running the tool with administrator privileg
 - Ensure you have the latest Rust toolchain installed
 - Verify Windows SDK is available for the `windows` crate
 
-## Contributing
+## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit issues, feature requests, or pull requests.
+**We welcome contributions!** This project is actively being developed and we'd love your help.
 
-## License
+### 🐛 Reporting Issues
+- Use GitHub Issues to report bugs or request features
+- Include system information (Windows version, Rust version)
+- Provide steps to reproduce any issues
+- Screenshots are helpful for UI-related issues
+
+### 📝 Development Contributions
+1. **Fork the repository**
+2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
+3. **Make your changes** with proper testing
+4. **Follow code style**: Run `cargo fmt` and `cargo clippy`
+5. **Test thoroughly**: Both dev and release modes
+6. **Submit a Pull Request** with a clear description
+
+### 📊 Areas for Contribution
+- 🐛 Bug fixes and stability improvements
+- 🎨 UI/UX enhancements
+- 🚀 Performance optimizations
+- 📝 Documentation improvements
+- 🌍 Internationalization (i18n)
+- ✨ New features from the roadmap
+
+## 🗺️ Project Roadmap
+
+### 🎯 Short Term (v0.2.0)
+- 🔧 Complete debugging and logging system
+- 🎨 UI polish and performance optimization
+- 📊 Export functionality (CSV/JSON)
+- 🔍 Advanced search and filtering
+
+### 🎆 Medium Term (v0.3.0)
+- 📈 Connection history and analytics
+- 🌙 Dark/Light theme support
+- 🗺️ Network traffic visualization
+- 📧 System tray integration
+
+### 🚀 Long Term (v1.0.0)
+- 🌍 Multi-language support
+- 🛡️ Security monitoring features
+- 📊 Advanced analytics dashboard
+- 🔌 Cross-platform support (macOS, Linux)
+
+## 📜 License
 
 This project is open source. Please refer to the license file for details.
 
-## Changelog
+## 📅 Changelog
 
-### Version 1.0.0
-- Initial release with TCP/UDP connection monitoring
-- Process name resolution
-- Protocol and port filtering
-- Clean table output format
+### Version 0.1.0-dev (Current)
+- ✨ **NEW**: Modern Tauri 2 + Nuxt 3 architecture
+- ✨ **NEW**: Real-time GUI with Vue.js components
+- ✨ **NEW**: Auto-refresh with configurable intervals
+- ✨ **NEW**: Advanced filtering (protocol, port, process)
+- ✨ **NEW**: Anti-jitter UI improvements
+- ✨ **NEW**: Responsive design with Tailwind CSS
+- ✨ **NEW**: Connection statistics and sorting
+- 🔄 **MIGRATED**: From CLI to desktop GUI application
+- 🔄 **IMPROVED**: Better process name resolution
+- 🔄 **ENHANCED**: Windows API integration
+
+### Legacy Version 1.0.0 (CLI)
+- ✅ Initial CLI release with TCP/UDP monitoring
+- ✅ Process name resolution
+- ✅ Protocol and port filtering
+- ✅ Clean table output format
+
+---
+
+**💬 Questions or suggestions?** Feel free to open an issue or start a discussion!
+
+**⭐ Like this project?** Give it a star on GitHub to show your support!
+
+**Built with ❤️ by developers, for developers.**
