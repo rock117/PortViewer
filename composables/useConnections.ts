@@ -1,5 +1,6 @@
 import { ref, computed, watch, readonly, onUnmounted } from 'vue'
 import type { ConnectionInfo } from '~/plugins/tauri.client'
+import { logger } from '~/utils/logger'
 
 export interface FilterState {
   protocol: 'all' | 'tcp' | 'udp'
@@ -71,7 +72,7 @@ export const useConnections = () => {
       applyFilters()
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch connections'
-      console.error('Error fetching connections:', err)
+      logger.error('Error fetching connections:', err)
     } finally {
       isLoading.value = false
     }
@@ -91,7 +92,7 @@ export const useConnections = () => {
     // Port filter (using string prefix matching)
     if (filters.value.port) {
       const portStr = filters.value.port.trim()
-      console.log('🔍 Port filter search:', portStr)
+      logger.debug('🔍 Port filter search:', portStr)
       
       if (portStr) {
         const beforeCount = filtered.length
@@ -102,7 +103,7 @@ export const useConnections = () => {
           
           // Debug specific cases
           if (result) {
-            console.log(`✅ Match found: ${conn.local_port}/${conn.remote_port} matches "${portStr}"`, {
+            logger.debug(`✅ Match found: ${conn.local_port}/${conn.remote_port} matches "${portStr}"`, {
               local_port: conn.local_port,
               remote_port: conn.remote_port,
               localMatch,
@@ -113,7 +114,7 @@ export const useConnections = () => {
           return result
         })
         
-        console.log(`📊 Port filter: ${beforeCount} → ${filtered.length} connections`)
+        logger.debug(`📊 Port filter: ${beforeCount} → ${filtered.length} connections`)
       }
     }
 

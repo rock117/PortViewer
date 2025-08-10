@@ -1,3 +1,5 @@
+import { logger } from '../utils/logger'
+
 export interface ConnectionInfo {
   protocol: string
   local_address: string
@@ -22,7 +24,7 @@ const isTauri = () => {
   
   const isInTauri = hasTauriAPI && hasTauriInvoke
   
-  console.log('Tauri environment detection:', {
+  logger.debug('Tauri environment detection:', {
     hasWindow,
     hasTauriAPI,
     hasTauriInvoke,
@@ -163,27 +165,27 @@ const mockConnections: ConnectionInfo[] = [
 
 export class TauriAPI {
   static async getConnections(): Promise<ConnectionInfo[]> {
-    console.log('TauriAPI.getConnections() called')
+    logger.debug('TauriAPI.getConnections() called')
     
     // Always try Tauri first, regardless of environment detection
     try {
-      console.log('Attempting to import Tauri API...')
+      logger.debug('Attempting to import Tauri API...')
       const { invoke } = await import('@tauri-apps/api/core')
-      console.log('Tauri API imported successfully, calling get_connections...')
+      logger.debug('Tauri API imported successfully, calling get_connections...')
       const result = await invoke('get_connections') as ConnectionInfo[]
-      console.log('Tauri backend returned:', result.length, 'connections')
+      logger.log('Tauri backend returned:', result.length + ' connections')
       return result
     } catch (error) {
-      console.log('Tauri API failed, falling back to mock data. Error:', error)
+      logger.error('Tauri API failed, falling back to mock data. Error:', error)
       
       // Only use mock data if Tauri is completely unavailable
       if (!isTauri()) {
-        console.log('Environment detection confirms browser mode, using mock data')
+        logger.debug('Environment detection confirms browser mode, using mock data')
         return Promise.resolve(mockConnections)
       }
       
       // If we're in Tauri but invoke failed, still try mock data as fallback
-      console.log('In Tauri environment but invoke failed, using mock data as fallback')
+      logger.debug('In Tauri environment but invoke failed, using mock data as fallback')
       return Promise.resolve(mockConnections)
     }
   }
@@ -192,7 +194,7 @@ export class TauriAPI {
   static async getConnectionsOld(): Promise<ConnectionInfo[]> {
     if (!isTauri()) {
       // Return mock data in browser mode
-      console.log('Running in browser mode, returning mock data')
+      logger.debug('Running in browser mode, returning mock data')
       return Promise.resolve(mockConnections)
     }
 
@@ -200,7 +202,7 @@ export class TauriAPI {
       const { invoke } = await import('@tauri-apps/api/core')
       return await invoke('get_connections')
     } catch (error) {
-      console.error('Failed to get connections:', error)
+      logger.error('Failed to get connections:', error)
       throw error
     }
   }
@@ -208,7 +210,7 @@ export class TauriAPI {
   static async getFilteredConnections(protocol?: string, port?: number): Promise<ConnectionInfo[]> {
     if (!isTauri()) {
       // Return filtered mock data in browser mode
-      console.log('Running in browser mode, returning filtered mock data')
+      logger.debug('Running in browser mode, returning filtered mock data')
       let filtered = [...mockConnections]
       
       if (protocol && protocol !== 'all') {
@@ -230,7 +232,7 @@ export class TauriAPI {
       const { invoke } = await import('@tauri-apps/api/core')
       return await invoke('get_filtered_connections', { protocol, port })
     } catch (error) {
-      console.error('Failed to get filtered connections:', error)
+      logger.error('Failed to get filtered connections:', error)
       throw error
     }
   }

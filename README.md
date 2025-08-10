@@ -104,12 +104,134 @@ npm run build
 cargo tauri build
 ```
 
+## 🔨 编译和打包 | Build & Package
+
+### 📦 完整构建流程 | Complete Build Process
+
+#### 1. 环境检查 | Environment Check
+```bash
+# 检查 Rust 版本 | Check Rust version
+rustc --version
+cargo --version
+
+# 检查 Node.js 版本 | Check Node.js version
+node --version
+npm --version
+
+# 检查 Tauri CLI | Check Tauri CLI
+cargo tauri --version
+```
+
+#### 2. 前端构建 | Frontend Build
+```bash
+# 安装依赖 | Install dependencies
+npm install
+
+# 构建 Nuxt 静态文件 | Build Nuxt static files
+npm run build
+
+# 验证构建输出 | Verify build output
+ls -la dist/
+```
+
+#### 3. Rust 后端编译 | Rust Backend Compilation
+```bash
+# 开发模式编译 | Development build
+cargo build
+
+# 生产模式编译 | Release build
+cargo build --release
+
+# 检查编译结果 | Check build results
+ls -la src-tauri/target/release/
+```
+
+#### 4. Tauri 应用打包 | Tauri App Packaging
+```bash
+# 完整打包流程 | Complete packaging process
+cargo tauri build
+
+# 指定目标架构 | Specify target architecture
+cargo tauri build --target x86_64-pc-windows-msvc
+
+# 调试模式打包 | Debug mode packaging
+cargo tauri build --debug
+```
+
+### 🚀 运行方式 | Running Methods
+
+#### 开发模式 | Development Mode
+```bash
+# 标准开发模式（推荐）| Standard dev mode (recommended)
+cargo tauri dev
+
+# 带调试信息的开发模式 | Dev mode with debug info
+RUST_LOG=debug cargo tauri dev
+
+# 仅启动前端开发服务器 | Frontend dev server only
+npm run dev
+```
+
+#### 生产模式 | Production Mode
+```bash
+# 运行构建后的可执行文件 | Run built executable
+.\src-tauri\target\release\windows-port-viewer.exe
+
+# 带控制台输出运行 | Run with console output
+.\src-tauri\target\release\windows-port-viewer.exe > output.log 2>&1
+
+# 后台运行 | Run in background
+start "" ".\src-tauri\target\release\windows-port-viewer.exe"
+```
+
+### 📁 构建输出说明 | Build Output Description
+
+#### 目录结构 | Directory Structure
+```
+src-tauri/target/
+├── debug/                          # 调试版本 | Debug builds
+│   ├── windows-port-viewer.exe     # 调试可执行文件 | Debug executable
+│   └── deps/                       # 依赖文件 | Dependencies
+├── release/                        # 发布版本 | Release builds
+│   ├── windows-port-viewer.exe     # 发布可执行文件 | Release executable
+│   ├── bundle/                     # 打包文件 | Bundle files
+│   │   ├── msi/                    # MSI 安装包 | MSI installer
+│   │   └── nsis/                   # NSIS 安装包 | NSIS installer
+│   └── deps/                       # 依赖文件 | Dependencies
+└── build/                          # 构建缓存 | Build cache
+```
+
+#### 文件说明 | File Description
+- **`windows-port-viewer.exe`**: 主程序可执行文件 | Main executable
+- **`bundle/msi/`**: Windows MSI 安装包 | Windows MSI installer
+- **`bundle/nsis/`**: NSIS 安装程序 | NSIS installer
+- **`deps/`**: 编译依赖和中间文件 | Compilation dependencies
+
+### ⚡ 快速命令 | Quick Commands
+
+```bash
+# 一键开发 | One-click development
+npm run tauri:dev
+
+# 一键构建 | One-click build
+npm run tauri:build
+
+# 清理构建缓存 | Clean build cache
+cargo clean
+npm run clean
+
+# 重新构建 | Rebuild from scratch
+cargo clean && npm run build && cargo tauri build
+```
+
 ### 📝 Development Notes
 
 - **Frontend Dev Server**: Runs on `http://localhost:1420`
 - **Hot Reload**: Both Rust backend and Nuxt frontend support hot reload
 - **Debug Console**: Use `F12` in dev mode to access browser developer tools
 - **Build Output**: Production builds are located in `src-tauri/target/release/`
+- **Bundle Size**: Release executable is typically 8-15MB
+- **Build Time**: Full release build takes 2-5 minutes depending on hardware
 
 ## 🚀 Usage
 
