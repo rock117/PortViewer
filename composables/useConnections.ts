@@ -1,6 +1,6 @@
-import { ref, computed, watch, readonly, onUnmounted } from 'vue'
+import { ref, computed, watch, readonly, onUnmounted, nextTick } from 'vue'
 import type { ConnectionInfo } from '~/plugins/tauri.client'
-import { logger } from '~/utils/logger'
+import { logger } from '~/utils/logger' 
 
 export interface FilterState {
   protocol: 'all' | 'tcp' | 'udp'
@@ -87,7 +87,7 @@ export const useConnections = () => {
   // Apply filters to connections
   const applyFilters = (): void => {
     let filtered: ConnectionInfo[] = [...connections.value]
-
+    const total = filtered.length
     // Protocol filter
     if (filters.value.protocol !== 'all') {
       filtered = filtered.filter((conn: ConnectionInfo) => 
@@ -106,15 +106,15 @@ export const useConnections = () => {
           const localMatch: boolean = conn.local_port.toString().startsWith(portStr)
           const remoteMatch: boolean = conn.remote_port.toString().startsWith(portStr)
           const result: boolean = localMatch || remoteMatch
-          
+         
           // Debug specific cases
           if (result) {
-            logger.debug(`✅ Match found: ${conn.local_port}/${conn.remote_port} matches "${portStr}"`, {
-              local_port: conn.local_port,
-              remote_port: conn.remote_port,
-              localMatch,
-              remoteMatch
-            })
+            if(localMatch){
+              logger.debug(`✅ Local port match found: ${conn.local_port} matches "${portStr}"`)
+            }
+            if(remoteMatch){
+              logger.debug(`✅ Remote port match found: ${conn.remote_port} matches "${portStr}"`)
+            }
           }
           
           return result
@@ -149,7 +149,23 @@ export const useConnections = () => {
       })
     }
 
-    filteredConnections.value = filtered
+    // Force reactivity update by creating a new array reference
+    filteredConnections.value = [...filtered]
+    
+    // Debug: Log final filter results
+    logger.debug(`🎯 Final filter results: ${total} → ${filtered.length} connections`)
+    logger.debug(`📋 FilteredConnections updated:`, {
+      totalOriginal: total,
+      finalFiltered: filtered.length,
+      protocolFilter: filters.value.protocol,
+      portFilter: filters.value.port,
+      processFilter: filters.value.process
+    })
+    
+    // Force Vue to re-render by triggering nextTick
+    nextTick(() => {
+      logger.debug(`✨ UI should now show ${filteredConnections.value.length} connections`)
+    })
   }
 
   // Helper function to get nested object values
@@ -170,8 +186,17 @@ export const useConnections = () => {
 
   // Update filters
   const updateFilter = (key: keyof FilterState, value: string): void => {
+    logger.debug(`🔧 Filter update: ${key} = "${value}"`)
     filters.value[key] = value as any
+    
+    // Apply filters and log the process
+    logger.debug(`🔄 Applying filters after ${key} change...`)
     applyFilters()
+    
+    // Verify the update took effect
+    nextTick(() => {
+      logger.debug(`🔍 Post-filter verification: filteredConnections.length = ${filteredConnections.value.length}`)
+    })
   }
 
   // Auto refresh functionality

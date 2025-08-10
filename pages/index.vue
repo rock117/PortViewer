@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="h-screen bg-gray-50 flex flex-col overflow-hidden">
     <!-- Header -->
-    <header class="bg-white shadow-sm border-b border-gray-200">
+    <header class="bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
           <div class="flex items-center">
@@ -30,7 +30,8 @@
     </header>
 
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="flex-1 overflow-hidden">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-full flex flex-col space-y-6">
       <!-- Statistics Cards -->
       <StatisticsCard :statistics="statistics" />
 
@@ -46,20 +47,23 @@
         :fetch-connections="fetchConnections"
       />
 
-      <!-- Connections Table -->
-      <ConnectionsTable 
-        :connections="connections"
-        :filtered-connections="filteredConnections"
-        :is-loading="isLoading"
-        :error="error"
-        :sort-config="sortConfig"
-        :fetch-connections="fetchConnections"
-        :sort-by="sortBy"
-      />
+        <!-- Connections Table -->
+        <div class="flex-1 min-h-0">
+          <ConnectionsTable 
+            :connections="connections"
+            :filtered-connections="filteredConnections"
+            :is-loading="isLoading"
+            :error="error"
+            :sort-config="sortConfig"
+            :fetch-connections="fetchConnections"
+            :sort-by="sortBy"
+          />
+        </div>
+      </div>
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white border-t border-gray-200 mt-12">
+    <footer class="bg-white border-t border-gray-200 flex-shrink-0">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div class="flex items-center justify-between">
           <p class="text-sm text-gray-600">
