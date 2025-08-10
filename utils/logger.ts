@@ -9,9 +9,18 @@ declare global {
   }
 }
 
+// Logger function type definitions
+type LogLevel = 'info' | 'debug' | 'error'
+
+interface LogMessage {
+  level: LogLevel
+  message: string
+  data: string | null
+}
+
 // Custom logger for both dev and production modes
 export const logger = {
-  log: (message: string, data?: any) => {
+  log: (message: string, data?: any): void => {
     // Always show in console (dev mode)
     console.log(message, data)
     
@@ -20,43 +29,43 @@ export const logger = {
       try {
         // Send log to Rust backend
         window.__TAURI__.core.invoke('log_message', {
-          level: 'info',
+          level: 'info' as LogLevel,
           message: message,
           data: data ? JSON.stringify(data) : null
-        }).catch(() => {
+        } as LogMessage).catch((): void => {
           // Silently fail if backend logging not available
         })
-      } catch (e) {
+      } catch (e: unknown) {
         // Silently fail if Tauri not available
       }
     }
   },
   
-  debug: (message: string, data?: any) => {
+  debug: (message: string, data?: any): void => {
     console.log(`🐛 ${message}`, data)
     
     if (typeof window !== 'undefined' && window.__TAURI__) {
       try {
         window.__TAURI__.core.invoke('log_message', {
-          level: 'debug',
+          level: 'debug' as LogLevel,
           message: `🐛 ${message}`,
           data: data ? JSON.stringify(data) : null
-        }).catch(() => {})
-      } catch (e) {}
+        } as LogMessage).catch((): void => {})
+      } catch (e: unknown) {}
     }
   },
   
-  error: (message: string, error?: any) => {
+  error: (message: string, error?: any): void => {
     console.error(`❌ ${message}`, error)
     
     if (typeof window !== 'undefined' && window.__TAURI__) {
       try {
         window.__TAURI__.core.invoke('log_message', {
-          level: 'error',
+          level: 'error' as LogLevel,
           message: `❌ ${message}`,
           data: error ? JSON.stringify(error) : null
-        }).catch(() => {})
-      } catch (e) {}
+        } as LogMessage).catch((): void => {})
+      } catch (e: unknown) {}
     }
   }
 }

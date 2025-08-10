@@ -12,17 +12,17 @@ export interface ConnectionInfo {
 }
 
 // Check if we're running in Tauri environment
-const isTauri = () => {
+const isTauri = (): boolean => {
   // Check for Tauri API availability
-  const hasWindow = typeof window !== 'undefined'
-  const hasTauriAPI = hasWindow && (window as any).__TAURI__ !== undefined
-  const hasTauriInvoke = hasWindow && (window as any).__TAURI__?.core?.invoke !== undefined
+  const hasWindow: boolean = typeof window !== 'undefined'
+  const hasTauriAPI: boolean = hasWindow && (window as any).__TAURI__ !== undefined
+  const hasTauriInvoke: boolean = hasWindow && (window as any).__TAURI__?.core?.invoke !== undefined
   
   // Also check for Tauri-specific user agent or other indicators
-  const userAgent = hasWindow ? navigator.userAgent : ''
-  const isTauriUserAgent = userAgent.includes('Tauri') || userAgent.includes('tauri')
+  const userAgent: string = hasWindow ? navigator.userAgent : ''
+  const isTauriUserAgent: boolean = userAgent.includes('Tauri') || userAgent.includes('tauri')
   
-  const isInTauri = hasTauriAPI && hasTauriInvoke
+  const isInTauri: boolean = hasTauriAPI && hasTauriInvoke
   
   logger.debug('Tauri environment detection:', {
     hasWindow,
@@ -172,10 +172,10 @@ export class TauriAPI {
       logger.debug('Attempting to import Tauri API...')
       const { invoke } = await import('@tauri-apps/api/core')
       logger.debug('Tauri API imported successfully, calling get_connections...')
-      const result = await invoke('get_connections') as ConnectionInfo[]
+      const result: ConnectionInfo[] = await invoke('get_connections') as ConnectionInfo[]
       logger.log('Tauri backend returned:', result.length + ' connections')
       return result
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Tauri API failed, falling back to mock data. Error:', error)
       
       // Only use mock data if Tauri is completely unavailable
@@ -200,8 +200,8 @@ export class TauriAPI {
 
     try {
       const { invoke } = await import('@tauri-apps/api/core')
-      return await invoke('get_connections')
-    } catch (error) {
+      return await invoke('get_connections') as ConnectionInfo[]
+    } catch (error: unknown) {
       logger.error('Failed to get connections:', error)
       throw error
     }
@@ -211,16 +211,16 @@ export class TauriAPI {
     if (!isTauri()) {
       // Return filtered mock data in browser mode
       logger.debug('Running in browser mode, returning filtered mock data')
-      let filtered = [...mockConnections]
+      let filtered: ConnectionInfo[] = [...mockConnections]
       
       if (protocol && protocol !== 'all') {
-        filtered = filtered.filter(conn => 
+        filtered = filtered.filter((conn: ConnectionInfo) => 
           conn.protocol.toLowerCase() === protocol.toLowerCase()
         )
       }
       
       if (port) {
-        filtered = filtered.filter(conn => 
+        filtered = filtered.filter((conn: ConnectionInfo) => 
           conn.local_port === port || conn.remote_port === port
         )
       }
@@ -230,8 +230,8 @@ export class TauriAPI {
 
     try {
       const { invoke } = await import('@tauri-apps/api/core')
-      return await invoke('get_filtered_connections', { protocol, port })
-    } catch (error) {
+      return await invoke('get_filtered_connections', { protocol, port }) as ConnectionInfo[]
+    } catch (error: unknown) {
       logger.error('Failed to get filtered connections:', error)
       throw error
     }

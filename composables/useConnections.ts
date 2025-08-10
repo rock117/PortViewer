@@ -35,7 +35,13 @@ export const useConnections = () => {
 
   // Statistics computed properties
   const statistics = computed(() => {
-    const stats = {
+    const stats: {
+      total: number;
+      tcp: number;
+      udp: number;
+      listening: number;
+      established: number;
+    } = {
       total: connections.value.length,
       tcp: 0,
       udp: 0,
@@ -43,7 +49,7 @@ export const useConnections = () => {
       established: 0
     }
 
-    connections.value.forEach(conn => {
+    connections.value.forEach((conn: ConnectionInfo) => {
       if (conn.protocol.toLowerCase() === 'tcp') stats.tcp++
       else if (conn.protocol.toLowerCase() === 'udp') stats.udp++
 
@@ -55,7 +61,7 @@ export const useConnections = () => {
   })
 
   // Fetch connections from Tauri backend
-  const fetchConnections = async () => {
+  const fetchConnections = async (): Promise<void> => {
     // Only show loading state if we don't have existing data (first load)
     if (connections.value.length === 0) {
       isLoading.value = true
@@ -65,12 +71,12 @@ export const useConnections = () => {
       error.value = null
       
       const { $tauri } = useNuxtApp()
-      const data = await $tauri.getConnections()
+      const data: ConnectionInfo[] = await $tauri.getConnections()
       
       // Smooth data update to prevent jitter
       connections.value = data
       applyFilters()
-    } catch (err) {
+    } catch (err: unknown) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch connections'
       logger.error('Error fetching connections:', err)
     } finally {
@@ -79,27 +85,27 @@ export const useConnections = () => {
   }
 
   // Apply filters to connections
-  const applyFilters = () => {
-    let filtered = [...connections.value]
+  const applyFilters = (): void => {
+    let filtered: ConnectionInfo[] = [...connections.value]
 
     // Protocol filter
     if (filters.value.protocol !== 'all') {
-      filtered = filtered.filter(conn => 
+      filtered = filtered.filter((conn: ConnectionInfo) => 
         conn.protocol.toLowerCase() === filters.value.protocol
       )
     }
 
     // Port filter (using string prefix matching)
     if (filters.value.port) {
-      const portStr = filters.value.port.trim()
+      const portStr: string = filters.value.port.trim()
       logger.debug('🔍 Port filter search:', portStr)
       
       if (portStr) {
-        const beforeCount = filtered.length
-        filtered = filtered.filter(conn => {
-          const localMatch = conn.local_port.toString().startsWith(portStr)
-          const remoteMatch = conn.remote_port.toString().startsWith(portStr)
-          const result = localMatch || remoteMatch
+        const beforeCount: number = filtered.length
+        filtered = filtered.filter((conn: ConnectionInfo) => {
+          const localMatch: boolean = conn.local_port.toString().startsWith(portStr)
+          const remoteMatch: boolean = conn.remote_port.toString().startsWith(portStr)
+          const result: boolean = localMatch || remoteMatch
           
           // Debug specific cases
           if (result) {
@@ -120,19 +126,19 @@ export const useConnections = () => {
 
     // Process filter
     if (filters.value.process) {
-      const processFilter = filters.value.process.toLowerCase()
-      filtered = filtered.filter(conn =>
+      const processFilter: string = filters.value.process.toLowerCase()
+      filtered = filtered.filter((conn: ConnectionInfo) =>
         conn.process_name.toLowerCase().includes(processFilter)
       )
     }
 
     // Apply sorting
     if (sortConfig.value.column) {
-      filtered.sort((a, b) => {
-        const aVal = getNestedValue(a, sortConfig.value.column!)
-        const bVal = getNestedValue(b, sortConfig.value.column!)
+      filtered.sort((a: ConnectionInfo, b: ConnectionInfo) => {
+        const aVal: any = getNestedValue(a, sortConfig.value.column!)
+        const bVal: any = getNestedValue(b, sortConfig.value.column!)
         
-        let comparison = 0
+        let comparison: number = 0
         if (typeof aVal === 'number' && typeof bVal === 'number') {
           comparison = aVal - bVal
         } else {
@@ -147,12 +153,12 @@ export const useConnections = () => {
   }
 
   // Helper function to get nested object values
-  const getNestedValue = (obj: any, path: string) => {
-    return path.split('.').reduce((current, key) => current?.[key], obj)
+  const getNestedValue = (obj: any, path: string): any => {
+    return path.split('.').reduce((current: any, key: string) => current?.[key], obj)
   }
 
   // Sort connections by column
-  const sortBy = (column: string) => {
+  const sortBy = (column: string): void => {
     if (sortConfig.value.column === column) {
       sortConfig.value.direction = sortConfig.value.direction === 'asc' ? 'desc' : 'asc'
     } else {
@@ -163,32 +169,32 @@ export const useConnections = () => {
   }
 
   // Update filters
-  const updateFilter = (key: keyof FilterState, value: string) => {
+  const updateFilter = (key: keyof FilterState, value: string): void => {
     filters.value[key] = value as any
     applyFilters()
   }
 
   // Auto refresh functionality
-  const startAutoRefresh = () => {
+  const startAutoRefresh = (): void => {
     if (refreshInterval.value) {
       clearInterval(refreshInterval.value)
     }
     
-    refreshInterval.value = setInterval(() => {
+    refreshInterval.value = setInterval((): void => {
       if (autoRefresh.value) {
         fetchConnections()
       }
     }, refreshIntervalSeconds.value * 1000) // Use configurable interval
   }
 
-  const stopAutoRefresh = () => {
+  const stopAutoRefresh = (): void => {
     if (refreshInterval.value) {
       clearInterval(refreshInterval.value)
       refreshInterval.value = null
     }
   }
 
-  const toggleAutoRefresh = () => {
+  const toggleAutoRefresh = (): void => {
     autoRefresh.value = !autoRefresh.value
     if (autoRefresh.value) {
       startAutoRefresh()
@@ -197,7 +203,7 @@ export const useConnections = () => {
     }
   }
 
-  const setRefreshInterval = (seconds: number) => {
+  const setRefreshInterval = (seconds: number): void => {
     refreshIntervalSeconds.value = seconds
     if (autoRefresh.value) {
       // Restart with new interval
