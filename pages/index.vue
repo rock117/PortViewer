@@ -81,6 +81,8 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import useConnections from '~/composables/useConnections'
 // Set page meta
 useHead({
   title: 'Windows Port Viewer',
@@ -105,11 +107,20 @@ const {
   updateFilter,
   toggleAutoRefresh,
   setRefreshInterval,
-  startAutoRefresh
-} = useConnections()
+  startAutoRefresh,
+  applyFilters,
+  stopAutoRefresh,
+  setConnections,
+  setFilterConnections
+} = useConnections
 
 // Last updated timestamp
 const lastUpdated = ref('')
+
+watch(filters, () => {
+    applyFilters()
+}, { deep: true })
+
 
 // Update timestamp when connections are fetched
 watch(connections, () => {
@@ -130,7 +141,9 @@ onMounted(async () => {
   window.addEventListener('keydown', handleKeydown)
   
   // Initial data fetch
-  await fetchConnections()
+  const conns = await fetchConnections()
+  setConnections(conns)
+  applyFilters()
   
   // Start auto refresh
   startAutoRefresh()
@@ -139,5 +152,7 @@ onMounted(async () => {
 // Cleanup on unmount
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown)
+  stopAutoRefresh()
 })
+
 </script>
