@@ -42,15 +42,13 @@
         :refresh-interval-seconds="refreshIntervalSeconds"
         :is-loading="isLoading"
         :update-filter="updateFilter"
-        :toggle-auto-refresh="toggleAutoRefresh"
-        :set-refresh-interval="setRefreshInterval"
         :fetch-connections="fetchConnections"
       />
 
         <!-- Connections Table -->
         <div class="flex-1 min-h-0">
           <ConnectionsTable 
-            :connections="connections"
+            :connections="allConnections"
             :filtered-connections="filteredConnections"
             :is-loading="isLoading"
             :error="error"
@@ -83,6 +81,13 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import useConnections from '~/composables/useConnections'
+import { logger } from '~/utils/logger'
+export interface FilterState {
+  protocol: 'all' | 'tcp' | 'udp'
+  port: string
+  process: string
+}
+
 // Set page meta
 useHead({
   title: 'Windows Port Viewer',
@@ -90,40 +95,53 @@ useHead({
     { name: 'description', content: 'Monitor Windows TCP/UDP port usage with process information' }
   ]
 })
-
+const filters = ref({
+  protocol: 'all',
+  port: '',
+  process: ''
+})
 // Use connections composable
 const {
-  connections,
-  filteredConnections,
-  isLoading,
-  error,
-  statistics,
-  filters,
-  sortConfig,
-  autoRefresh,
-  refreshIntervalSeconds,
   fetchConnections,
-  sortBy,
-  updateFilter,
-  toggleAutoRefresh,
-  setRefreshInterval,
-  startAutoRefresh,
-  applyFilters,
-  stopAutoRefresh,
-  setConnections,
-  setFilterConnections
+  applyFilters
 } = useConnections
 
+const isLoading = ref(false)
+const error = ref(null)
+const autoRefresh = ref(false)
+const refreshIntervalSeconds = ref(5)
+const sortConfig = ref({
+  column: null,
+  direction: 'asc'
+})
+const sortBy = ref({
+  column: null,
+  direction: 'asc'
+})
+
+
+const allConnections = ref([])
+const filteredConnections = ref([])
+const statistics = computed(() => {
+  return  {
+      total: allConnections.value.length,
+      tcp: 0,
+      udp: 0,
+      listening: 0,
+      established: 0
+    }
+})
 // Last updated timestamp
 const lastUpdated = ref('')
 
 watch(filters, () => {
-    applyFilters()
+  logger.debug('🔄 Filters changed, updating filter-connections, filters:', filters.value)
+  updateFilterConnections()
 }, { deep: true })
 
 
 // Update timestamp when connections are fetched
-watch(connections, () => {
+watch(allConnections, () => {
   lastUpdated.value = new Date().toLocaleTimeString()
 })
 
@@ -135,24 +153,29 @@ const handleKeydown = (event: KeyboardEvent) => {
   }
 }
 
+const updateFilter = (key: keyof FilterState, value: string): void => {
+    filters.value[key] = value as any
+}
+
+const updateFilterConnections = () => {
+  logger.debug(`🔄 Filter connections begin update, filtered-connections num, ${filteredConnections.value.length}`)
+  filteredConnections.value = applyFilters(allConnections.value, filters.value)
+  logger.debug(`🔄 Filter connections complete update, filtered-connections num, ${filteredConnections.value.length}, filters = ${JSON.stringify(filters.value)}`)
+}
+
+
 // Initialize on mount
 onMounted(async () => {
   // Add keyboard event listener
   window.addEventListener('keydown', handleKeydown)
   
-  // Initial data fetch
-  const conns = await fetchConnections()
-  setConnections(conns)
-  applyFilters()
-  
-  // Start auto refresh
-  startAutoRefresh()
+  allConnections.value = await fetchConnections()
+  updateFilterConnections()
 })
 
 // Cleanup on unmount
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown)
-  stopAutoRefresh()
 })
 
 </script>

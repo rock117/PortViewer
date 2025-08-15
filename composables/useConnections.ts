@@ -2,253 +2,66 @@ import { ref, computed, watch, readonly, onUnmounted, nextTick } from 'vue'
 import type { ConnectionInfo } from '~/plugins/tauri.client'
 import { logger } from '~/utils/logger'
 
-export interface FilterState {
-  protocol: 'all' | 'tcp' | 'udp'
-  port: string
-  process: string
-}
+
 
 export interface SortConfig {
   column: string | null
   direction: 'asc' | 'desc'
 }
 
-const connections = ref<ConnectionInfo[]>([])
-const filteredConnections = ref<ConnectionInfo[]>([])
-const isLoading = ref(false)
-const error = ref<string | null>(null)
-const autoRefresh = ref(false)
-const refreshInterval = ref<NodeJS.Timeout | null>(null)
-const refreshIntervalSeconds = ref(5) // Default 5 seconds
-
-
-const filters = ref<FilterState>({
-  protocol: 'all',
-  port: '',
-  process: ''
-})
-
-const sortConfig = ref<SortConfig>({
-  column: null,
-  direction: 'asc'
-})
-
-// Statistics computed properties
-const statistics = computed(() => {
-  const stats: {
-    total: number;
-    tcp: number;
-    udp: number;
-    listening: number;
-    established: number;
-  } = {
-    total: connections.value.length,
-    tcp: 0,
-    udp: 0,
-    listening: 0,
-    established: 0
-  }
-
-  connections.value.forEach((conn: ConnectionInfo) => {
-    if (conn.protocol.toLowerCase() === 'tcp') stats.tcp++
-    else if (conn.protocol.toLowerCase() === 'udp') stats.udp++
-
-    if (conn.state.toLowerCase() === 'listening') stats.listening++
-    else if (conn.state.toLowerCase() === 'established') stats.established++
-  })
-
-  return stats
-})
-
 // Fetch connections from Tauri backend
 const fetchConnections = async (): Promise<ConnectionInfo[]> => {
   // Only show loading state if we don't have existing data (first load)
   logger.debug('Begin fetching connections...')
-  if (connections.value.length === 0) {
-    isLoading.value = true
-  }
-  let conn: ConnectionInfo[] = []
+  let conns: ConnectionInfo[] = []
   try {
-    error.value = null
-
     const { $tauri } = useNuxtApp()
-    conn = await $tauri.getConnections()
+    conns = await $tauri.getConnections()
   } catch (err: unknown) {
-    error.value = err instanceof Error ? err.message : 'Failed to fetch connections'
+    const error = err instanceof Error ? err.message : 'Failed to fetch connections'
     logger.error('Error fetching connections:', err)
   } finally {
-    isLoading.value = false
   }
-  return conn
+  return conns
 }
 
 // Apply filters to connections
-const applyFilters = (): void => {
-  let filtered: ConnectionInfo[] = [...connections.value]
-  const total = filtered.length
+const applyFilters = (connections: ConnectionInfo[], filters): ConnectionInfo[] => {
+  let filtered: ConnectionInfo[] = connections
   // Protocol filter
-  if (filters.value.protocol !== 'all') {
+  if (filters.protocol !== 'all') {
     filtered = filtered.filter((conn: ConnectionInfo) =>
-      conn.protocol.toLowerCase() === filters.value.protocol
+      conn.protocol.toLowerCase() === filters.protocol
     )
   }
 
   // Port filter (using string prefix matching)
-  if (filters.value.port) {
-    const portStr: string = filters.value.port.trim()
-    logger.debug('🔍 Port filter search:', portStr)
-
+  if (filters.port) {
+    const portStr: string = filters.port.trim()
     if (portStr) {
-      const beforeCount: number = filtered.length
       filtered = filtered.filter((conn: ConnectionInfo) => {
         const localMatch: boolean = conn.local_port.toString().startsWith(portStr)
         const remoteMatch: boolean = conn.remote_port.toString().startsWith(portStr)
         const result: boolean = localMatch || remoteMatch
-
-        // Debug specific cases
-        if (result) {
-          if (localMatch) {
-            logger.debug(`✅ Local port match found: ${conn.local_port} matches "${portStr}"`)
-          }
-          if (remoteMatch) {
-            logger.debug(`✅ Remote port match found: ${conn.remote_port} matches "${portStr}"`)
-          }
-        }
-
         return result
       })
-
-      logger.debug(`📊 Port filter: ${beforeCount} → ${filtered.length} connections`)
     }
   }
 
   // Process filter
-  if (filters.value.process) {
-    const processFilter: string = filters.value.process.toLowerCase()
+  if (filters.process) {
+    const processFilter: string = filters.process.toLowerCase()
     filtered = filtered.filter((conn: ConnectionInfo) =>
       conn.process_name.toLowerCase().includes(processFilter)
     )
   }
 
-  // Apply sorting
-  if (sortConfig.value.column) {
-    filtered.sort((a: ConnectionInfo, b: ConnectionInfo) => {
-      const aVal: any = getNestedValue(a, sortConfig.value.column!)
-      const bVal: any = getNestedValue(b, sortConfig.value.column!)
-
-      let comparison: number = 0
-      if (typeof aVal === 'number' && typeof bVal === 'number') {
-        comparison = aVal - bVal
-      } else {
-        comparison = String(aVal).localeCompare(String(bVal))
-      }
-
-      return sortConfig.value.direction === 'desc' ? -comparison : comparison
-    })
-  }
-
-  // Force reactivity update by creating a new array reference
-  filteredConnections.value = filtered
-
   // Debug: Log final filter results
-  logger.debug(`🎯 Final filter results: ${total} → ${filtered.length} connections`)
-  logger.debug(`📋 FilteredConnections updated:`, {
-    totalOriginal: total,
-    finalFiltered: filtered.length,
-    protocolFilter: filters.value.protocol,
-    portFilter: filters.value.port,
-    processFilter: filters.value.process
-  })
-
-}
-
-// Helper function to get nested object values
-const getNestedValue = (obj: any, path: string): any => {
-  return path.split('.').reduce((current: any, key: string) => current?.[key], obj)
-}
-
-// Sort connections by column
-const sortBy = (column: string): void => {
-  if (sortConfig.value.column === column) {
-    sortConfig.value.direction = sortConfig.value.direction === 'asc' ? 'desc' : 'asc'
-  } else {
-    sortConfig.value.column = column
-    sortConfig.value.direction = 'asc'
-  }
-}
-
-// Update filters
-const updateFilter = (key: keyof FilterState, value: string): void => {
-  logger.debug(`🔧 Filter update: ${key} = "${value}", before update: ${filters.value}`)
-  filters.value[key] = value as any
-  logger.debug(`🔧 Filter update: ${key} = "${value}", after update: ${filters.value}`)
-}
-
-// Auto refresh functionality
-const startAutoRefresh = (): void => {
-  if (refreshInterval.value) {
-    clearInterval(refreshInterval.value)
-  }
-
-  refreshInterval.value = setInterval((): void => {
-    if (autoRefresh.value) {
-      fetchConnections()
-    }
-  }, refreshIntervalSeconds.value * 1000) // Use configurable interval
-}
-
-const stopAutoRefresh = (): void => {
-  if (refreshInterval.value) {
-    clearInterval(refreshInterval.value)
-    refreshInterval.value = null
-  }
-}
-
-const toggleAutoRefresh = (): void => {
-  autoRefresh.value = !autoRefresh.value
-  if (autoRefresh.value) {
-    startAutoRefresh()
-  } else {
-    stopAutoRefresh()
-  }
-}
-
-
-const setRefreshInterval = (seconds: number): void => {
-  refreshIntervalSeconds.value = seconds
-  if (autoRefresh.value) {
-    // Restart with new interval
-    startAutoRefresh()
-  }
-}
-
-
-const setConnections = (conn: ConnectionInfo[]): void => {
-  connections.value = conn
-}
-
-const setFilterConnections = (conn: ConnectionInfo[]): void => {
-  filteredConnections.value = conn
+  logger.debug(`🎯 Final filter results: ${connections.length} → ${filtered.length} connections`)
+  return filtered
 }
 
 export default {
-  connections: readonly(connections),
-  filteredConnections: readonly(filteredConnections),
-  isLoading: readonly(isLoading),
-  error: readonly(error),
-  statistics: readonly(statistics),
-  filters: readonly(filters),
-  sortConfig: readonly(sortConfig),
-  autoRefresh: readonly(autoRefresh),
-  refreshIntervalSeconds: readonly(refreshIntervalSeconds),
   fetchConnections,
-  applyFilters,
-  sortBy,
-  updateFilter,
-  toggleAutoRefresh,
-  setRefreshInterval,
-  startAutoRefresh,
-  stopAutoRefresh,
-  setConnections,
-  setFilterConnections
+  applyFilters
 }

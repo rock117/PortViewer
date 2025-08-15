@@ -203,5 +203,13 @@ interface Props {
   sortBy: (column: string) => void
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
+
+// watch(
+//   () => props.filteredConnections,
+//   (conns) => {
+//     console.log('filteredConnections changed', conns);
+//   },
+//   { deep: true } // 深度监听配置
+// )
 </script>
