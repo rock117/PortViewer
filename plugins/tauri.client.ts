@@ -1,6 +1,7 @@
 import { logger } from '../utils/logger'
 
 export interface ConnectionInfo {
+  id: string
   protocol: string
   local_address: string
   local_port: number
@@ -37,10 +38,32 @@ const isTauri = (): boolean => {
   return isInTauri
 }
 
+// Generate unique ID for connections using UUID v4
+const generateConnectionId = (): string => {
+  // Simple UUID v4 implementation for browser compatibility
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0
+    const v = c == 'x' ? r : (r & 0x3 | 0x8)
+    return v.toString(16)
+  })
+}
+
 // Mock data for browser development
 const mockConnections: ConnectionInfo[] = [
   // TCP Connections
   {
+    id: generateConnectionId(),
+    protocol: 'TCP',
+    local_address: '192.168.1.50',
+    local_port: 22,
+    remote_address: '192.168.1.100',
+    remote_port: 54322,
+    state: 'ESTABLISHED',
+    pid: 9012,
+    process_name: 'sshd.exe'
+  },
+  {
+    id: generateConnectionId(),
     protocol: 'TCP',
     local_address: '127.0.0.1',
     local_port: 8080,
@@ -51,6 +74,7 @@ const mockConnections: ConnectionInfo[] = [
     process_name: 'chrome.exe'
   },
   {
+    id: generateConnectionId(),
     protocol: 'TCP',
     local_address: '0.0.0.0',
     local_port: 80,
@@ -61,6 +85,7 @@ const mockConnections: ConnectionInfo[] = [
     process_name: 'System'
   },
   {
+    id: generateConnectionId(),
     protocol: 'TCP',
     local_address: '0.0.0.0',
     local_port: 443,
@@ -71,6 +96,7 @@ const mockConnections: ConnectionInfo[] = [
     process_name: 'System'
   },
   {
+    id: generateConnectionId(),
     protocol: 'TCP',
     local_address: '127.0.0.1',
     local_port: 3000,
@@ -81,6 +107,7 @@ const mockConnections: ConnectionInfo[] = [
     process_name: 'node.exe'
   },
   {
+    id: generateConnectionId(),
     protocol: 'TCP',
     local_address: '192.168.1.10',
     local_port: 49152,
@@ -91,6 +118,7 @@ const mockConnections: ConnectionInfo[] = [
     process_name: 'chrome.exe'
   },
   {
+    id: generateConnectionId(),
     protocol: 'TCP',
     local_address: '127.0.0.1',
     local_port: 1420,
@@ -102,6 +130,7 @@ const mockConnections: ConnectionInfo[] = [
   },
   // UDP Connections
   {
+    id: generateConnectionId(),
     protocol: 'UDP',
     local_address: '127.0.0.1',
     local_port: 53,
@@ -112,6 +141,7 @@ const mockConnections: ConnectionInfo[] = [
     process_name: 'dns.exe'
   },
   {
+    id: generateConnectionId(),
     protocol: 'UDP',
     local_address: '0.0.0.0',
     local_port: 67,
@@ -122,6 +152,7 @@ const mockConnections: ConnectionInfo[] = [
     process_name: 'dhcp.exe'
   },
   {
+    id: generateConnectionId(),
     protocol: 'UDP',
     local_address: '192.168.1.10',
     local_port: 137,
@@ -132,6 +163,7 @@ const mockConnections: ConnectionInfo[] = [
     process_name: 'System'
   },
   {
+    id: generateConnectionId(),
     protocol: 'UDP',
     local_address: '192.168.1.10',
     local_port: 138,
@@ -142,6 +174,7 @@ const mockConnections: ConnectionInfo[] = [
     process_name: 'System'
   },
   {
+    id: generateConnectionId(),
     protocol: 'UDP',
     local_address: '0.0.0.0',
     local_port: 5353,
@@ -152,6 +185,7 @@ const mockConnections: ConnectionInfo[] = [
     process_name: 'mdnsresponder.exe'
   },
   {
+    id: generateConnectionId(),
     protocol: 'UDP',
     local_address: '127.0.0.1',
     local_port: 1900,

@@ -10,10 +10,12 @@ use models::ConnectionInfo;
 use network::get_all_connections;
 use filter::filter_connections;
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 // Serializable version of ConnectionInfo for Tauri commands
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct ConnectionInfoSerde {
+    id: String,
     protocol: String,
     local_address: String,
     local_port: u16,
@@ -24,9 +26,15 @@ struct ConnectionInfoSerde {
     process_name: String,
 }
 
+// Generate unique ID for connections using UUID
+fn generate_connection_id() -> String {
+    Uuid::new_v4().to_string()
+}
+
 impl From<ConnectionInfo> for ConnectionInfoSerde {
     fn from(conn: ConnectionInfo) -> Self {
         ConnectionInfoSerde {
+            id: generate_connection_id(),
             protocol: conn.protocol.to_string(),
             local_address: conn.local_address,
             local_port: conn.local_port,
