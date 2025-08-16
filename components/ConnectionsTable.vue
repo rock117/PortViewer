@@ -159,7 +159,7 @@
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="connection in filteredConnections" :key="`${connection.protocol}-${connection.local_port}-${connection.pid}`" class="hover:bg-gray-50 transition-all duration-150 ease-in-out">
+          <tr v-for="connection in filteredConnections"  class="hover:bg-gray-50 transition-all duration-150 ease-in-out">
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 uppercase">
               {{ connection.protocol }}
             </td>

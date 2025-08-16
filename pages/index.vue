@@ -42,7 +42,6 @@
         :refresh-interval-seconds="refreshIntervalSeconds"
         :is-loading="isLoading"
         :update-filter="updateFilter"
-        :fetch-connections="fetchConnections"
       />
 
         <!-- Connections Table -->
@@ -53,7 +52,6 @@
             :is-loading="isLoading"
             :error="error"
             :sort-config="sortConfig"
-            :fetch-connections="fetchConnections"
             :sort-by="sortBy"
           />
         </div>
