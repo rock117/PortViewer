@@ -42,6 +42,7 @@
         :refresh-interval-seconds="refreshIntervalSeconds"
         :is-loading="isLoading"
         :update-filter="updateFilter"
+        :refresh-connections="refreshConnections"
       />
 
         <!-- Connections Table -->
@@ -161,6 +162,12 @@ const updateFilterConnections = () => {
   logger.debug(`🔄 Filter connections complete update, filtered-connections num, ${filteredConnections.value.length}, filters = ${JSON.stringify(filters.value)}`)
 }
 
+const refreshConnections = async () => {
+  logger.debug('🔄 Refresh connections begin')
+  allConnections.value = await fetchConnections()
+  updateFilterConnections()
+  logger.debug('🔄 Refresh connections complete')
+}
 
 // Initialize on mount
 onMounted(async () => {

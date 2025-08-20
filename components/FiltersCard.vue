@@ -85,7 +85,7 @@
 
         <!-- Manual Refresh Button -->
         <button 
-          @click="fetchConnections" 
+          @click="refreshConnections" 
           :disabled="isLoading"
           class="btn-primary flex items-center"
         >
@@ -118,7 +118,8 @@ interface Props {
   updateFilter: (key: string, value: string) => void
   toggleAutoRefresh: () => void
   setRefreshInterval: (seconds: number) => void
-  fetchConnections: () => void
+  fetchConnections: () => void,
+  refreshConnections: () => void
 }
 
 defineProps<Props>()
