@@ -43,6 +43,8 @@
         :is-loading="isLoading"
         :update-filter="updateFilter"
         :refresh-connections="refreshConnections"
+        :toggle-auto-refresh="toggleAutoRefresh"
+        :set-refresh-interval="setRefreshInterval"
       />
 
         <!-- Connections Table -->
@@ -118,7 +120,7 @@ const sortBy = ref({
   direction: 'asc'
 })
 
-
+let internalFetchConnectionId: NodeJS.Timeout | null = null
 const allConnections = ref([])
 const filteredConnections = ref([])
 const statistics = computed(() => {
@@ -142,6 +144,7 @@ watch(filters, () => {
 // Update timestamp when connections are fetched
 watch(allConnections, () => {
   lastUpdated.value = new Date().toLocaleTimeString()
+  updateFilterConnections()
 })
 
 // Keyboard shortcuts
@@ -168,6 +171,28 @@ const refreshConnections = async () => {
   updateFilterConnections()
   logger.debug('🔄 Refresh connections complete')
 }
+
+const toggleAutoRefresh = () => {
+  autoRefresh.value = !autoRefresh.value
+}
+
+const setRefreshInterval = (seconds: number) => {
+  refreshIntervalSeconds.value = seconds
+}
+
+ 
+
+watch(autoRefresh, () => {
+  if (autoRefresh.value) {
+    internalFetchConnectionId = setInterval(async () => {
+      await refreshConnections()
+    }, refreshIntervalSeconds.value * 1000)
+  } else {
+    clearInterval(internalFetchConnectionId)
+    internalFetchConnectionId = null
+  }
+}, { immediate: true })
+
 
 // Initialize on mount
 onMounted(async () => {
