@@ -83,6 +83,7 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import useConnections from '~/composables/useConnections'
 import { logger } from '~/utils/logger'
+import type { ConnectionInfo } from '../plugins/tauri.client'
 export interface FilterState {
   protocol: 'all' | 'tcp' | 'udp'
   port: string
@@ -121,16 +122,22 @@ const sortBy = ref({
 })
 
 let internalFetchConnectionId: NodeJS.Timeout | null = null
-const allConnections = ref([])
-const filteredConnections = ref([])
+const allConnections = ref<ConnectionInfo[]>([])
+const filteredConnections = ref<ConnectionInfo[]>([])
 const statistics = computed(() => {
-  return  {
-      total: allConnections.value.length,
-      tcp: 0,
-      udp: 0,
-      listening: 0,
-      established: 0
-    }
+  const tcp = allConnections.value.filter(conn => conn.protocol.toLowerCase() === 'tcp').length
+  const udp = allConnections.value.filter(conn => conn.protocol.toLowerCase() === 'udp').length
+  const listening = allConnections.value.filter(conn => conn.state.toLowerCase() === 'listen').length
+  const established = allConnections.value.filter(conn => conn.state.toLowerCase() === 'established').length
+  
+  return {
+    total: allConnections.value.length,
+    filtered: filteredConnections.value.length,
+    tcp,
+    udp,
+    listening,
+    established
+  }
 })
 // Last updated timestamp
 const lastUpdated = ref('')
