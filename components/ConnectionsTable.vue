@@ -89,7 +89,7 @@
         </svg>
       </div>
       <h3 class="text-lg font-semibold text-gray-900 mb-2">No Connections Found</h3>
-      <p class="text-gray-600">No connections match your current filters.</p>
+      <!-- <p class="text-gray-600">No connections match your current filters.</p> -->
     </div>
 
     <!-- Table -->
