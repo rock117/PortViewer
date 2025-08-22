@@ -1,4 +1,4 @@
-use crate::models::{ConnectionInfo, Protocol};
+use crate::models::{ConnectionInfo, Protocol, ConnectionState};
 
 pub fn filter_connections(connections: &[ConnectionInfo], protocol: &str, filter_port: Option<u16>) -> Vec<ConnectionInfo> {
     connections.iter()
@@ -39,7 +39,7 @@ mod tests {
                 80,
                 "0.0.0.0".to_string(),
                 0,
-                ConnectionState::Listen,
+                ConnectionState::Listening,
                 1234,
                 "test.exe".to_string(),
             ),
@@ -76,7 +76,7 @@ mod tests {
                 80,
                 "0.0.0.0".to_string(),
                 0,
-                ConnectionState::Listen,
+                ConnectionState::Listening,
                 1234,
                 "test.exe".to_string(),
             ),

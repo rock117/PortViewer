@@ -5,9 +5,10 @@ mod models;
 mod network;
 mod process;
 mod filter;
+mod platform;
 
 use models::ConnectionInfo;
-use network::get_all_connections;
+use platform::create_network_provider;
 use filter::filter_connections;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -62,32 +63,63 @@ fn log_message(level: String, message: String, data: Option<String>) {
     }
 }
 
-// Tauri command to get all connections
+// Tauri command to get all connections using cross-platform provider
 #[tauri::command]
 fn get_connections() -> Vec<ConnectionInfoSerde> {
-    let connections = get_all_connections();
-    println!("Backend: Retrieved {} total connections", connections.len());
+    let provider = create_network_provider();
+    println!("Backend: Using {} network provider", provider.platform_name());
     
-    let tcp_count = connections.iter().filter(|c| matches!(c.protocol, crate::models::Protocol::TCP)).count();
-    let udp_count = connections.iter().filter(|c| matches!(c.protocol, crate::models::Protocol::UDP)).count();
-    println!("Backend: TCP connections: {}, UDP connections: {}", tcp_count, udp_count);
-    
-    let result: Vec<ConnectionInfoSerde> = connections.into_iter().map(ConnectionInfoSerde::from).collect();
-    println!("Backend: Returning {} serialized connections", result.len());
-    result
+    match provider.get_all_connections() {
+        Ok(connections) => {
+            println!("Backend: Retrieved {} total connections", connections.len());
+            
+            let tcp_count = connections.iter().filter(|c| matches!(c.protocol, crate::models::Protocol::TCP)).count();
+            let udp_count = connections.iter().filter(|c| matches!(c.protocol, crate::models::Protocol::UDP)).count();
+            println!("Backend: TCP connections: {}, UDP connections: {}", tcp_count, udp_count);
+            
+            let result: Vec<ConnectionInfoSerde> = connections.into_iter().map(ConnectionInfoSerde::from).collect();
+            println!("Backend: Returning {} serialized connections", result.len());
+            result
+        }
+        Err(e) => {
+            eprintln!("Backend Error: Failed to get connections: {}", e);
+            Vec::new()
+        }
+    }
 }
 
 // Tauri command to get filtered connections
 #[tauri::command]
 fn get_filtered_connections(protocol: String, port: Option<u16>) -> Vec<ConnectionInfoSerde> {
-    let all_connections = get_all_connections();
-    let filtered = filter_connections(&all_connections, &protocol, port);
-    filtered.into_iter().map(ConnectionInfoSerde::from).collect()
+    let provider = create_network_provider();
+    
+    match provider.get_all_connections() {
+        Ok(all_connections) => {
+            let filtered = filter_connections(&all_connections, &protocol, port);
+            filtered.into_iter().map(ConnectionInfoSerde::from).collect()
+        }
+        Err(e) => {
+            eprintln!("Backend Error: Failed to get connections for filtering: {}", e);
+            Vec::new()
+        }
+    }
+}
+
+// Tauri command to get platform information
+#[tauri::command]
+fn get_platform_info() -> serde_json::Value {
+    let provider = create_network_provider();
+    serde_json::json!({
+        "platform": provider.platform_name(),
+        "supported": provider.is_supported(),
+        "architecture": std::env::consts::ARCH,
+        "os": std::env::consts::OS
+    })
 }
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![get_connections, get_filtered_connections, log_message])
+        .invoke_handler(tauri::generate_handler![get_connections, get_filtered_connections, log_message, get_platform_info])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -18,6 +18,16 @@ serde = { version = "1.0", features = ["derive"] }
 tauri = { version = "2.0", features = ["devtools"] }
 chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1.0", features = ["v4"] }
+
+# Cross-platform system information - zero external dependencies
+sysinfo = "0.30"
+
+# Linux-specific dependencies (only compiled on Linux)
+[target.'cfg(target_os = "linux")'.dependencies]
+procfs = "0.16"
+
+# Platform-specific dependencies (only compiled on target platforms)
+[target.'cfg(windows)'.dependencies]
 windows = { version = "0.58", features = [
     "Win32_Foundation",
     "Win32_System_ProcessStatus",

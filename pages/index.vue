@@ -6,10 +6,18 @@
         <div class="flex items-center justify-between h-16">
           <div class="flex items-center">
             <div class="flex-shrink-0">
-              <h1 class="text-2xl font-bold text-gray-900">Windows Port Viewer</h1>
+              <h1 class="text-2xl font-bold text-gray-900">
+                {{ platformInfo?.platform || 'Cross-Platform' }} Port Viewer
+              </h1>
             </div>
             <div class="ml-4">
               <p class="text-sm text-gray-600">Monitor TCP/UDP port usage and process information</p>
+              <p v-if="platformInfo" class="text-xs text-gray-500">
+                {{ platformInfo.os }}/{{ platformInfo.architecture }} 
+                <span :class="platformInfo.supported ? 'text-green-600' : 'text-red-600'">
+                  {{ platformInfo.supported ? '✓ Supported' : '✗ Not Supported' }}
+                </span>
+              </p>
             </div>
           </div>
           
@@ -81,7 +89,6 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
-import useConnections from '~/composables/useConnections'
 import { logger } from '~/utils/logger'
 import type { ConnectionInfo } from '../plugins/tauri.client'
 export interface FilterState {
@@ -97,21 +104,17 @@ useHead({
     { name: 'description', content: 'Monitor Windows TCP/UDP port usage with process information' }
   ]
 })
-const filters = ref({
+const filters = ref<FilterState>({
   protocol: 'all',
   port: '',
   process: ''
 })
-// Use connections composable
-const {
-  fetchConnections,
-  applyFilters
-} = useConnections
-
+// State management
 const isLoading = ref(false)
-const error = ref(null)
+const error = ref<string | null>(null)
 const autoRefresh = ref(false)
-const refreshIntervalSeconds = ref(5)
+const refreshInterval = ref<NodeJS.Timeout | null>(null)
+const platformInfo = ref<any>(null)
 const sortConfig = ref({
   column: null,
   direction: 'asc'
@@ -124,6 +127,30 @@ const sortBy = ref({
 let internalFetchConnectionId: NodeJS.Timeout | null = null
 const allConnections = ref<ConnectionInfo[]>([])
 const filteredConnections = ref<ConnectionInfo[]>([])
+const refreshIntervalSeconds = ref(5)
+
+// Filter connections based on current filters
+const applyFilters = (connections: ConnectionInfo[], filters: FilterState): ConnectionInfo[] => {
+  return connections.filter(conn => {
+    // Protocol filter
+    if (filters.protocol !== 'all' && conn.protocol.toLowerCase() !== filters.protocol) {
+      return false
+    }
+    
+    // Port filter
+    if (filters.port && !conn.local_port.toString().includes(filters.port) && !conn.remote_port.toString().includes(filters.port)) {
+      return false
+    }
+    
+    // Process filter
+    if (filters.process && !conn.process_name.toLowerCase().includes(filters.process.toLowerCase())) {
+      return false
+    }
+    
+    return true
+  })
+}
+
 const statistics = computed(() => {
   const tcp = allConnections.value.filter(conn => conn.protocol.toLowerCase() === 'tcp').length
   const udp = allConnections.value.filter(conn => conn.protocol.toLowerCase() === 'udp').length
@@ -172,6 +199,26 @@ const updateFilterConnections = () => {
   logger.debug(`🔄 Filter connections complete update, filtered-connections num, ${filteredConnections.value.length}, filters = ${JSON.stringify(filters.value)}`)
 }
 
+// Fetch connections from Tauri backend
+const fetchConnections = async (): Promise<ConnectionInfo[]> => {
+  try {
+    isLoading.value = true
+    error.value = null
+    
+    const { invoke } = await import('@tauri-apps/api/core')
+    const connections = await invoke('get_connections') as ConnectionInfo[]
+    
+    logger.debug('✅ Fetched connections:', connections.length)
+    return connections
+  } catch (err) {
+    logger.error('❌ Failed to fetch connections:', err)
+    error.value = 'Failed to fetch connections'
+    return []
+  } finally {
+    isLoading.value = false
+  }
+}
+
 const refreshConnections = async () => {
   logger.debug('🔄 Refresh connections begin')
   allConnections.value = await fetchConnections()
@@ -201,11 +248,24 @@ watch(autoRefresh, () => {
 }, { immediate: true })
 
 
+// Fetch platform information
+const fetchPlatformInfo = async () => {
+  try {
+    const { invoke } = await import('@tauri-apps/api/core')
+    platformInfo.value = await invoke('get_platform_info')
+    logger.debug('Platform info:', platformInfo.value)
+  } catch (err) {
+    logger.error('Failed to fetch platform info:', err)
+  }
+}
+
 // Initialize on mount
 onMounted(async () => {
   // Add keyboard event listener
   window.addEventListener('keydown', handleKeydown)
   
+  // Fetch platform info and connections
+  await fetchPlatformInfo()
   allConnections.value = await fetchConnections()
   updateFilterConnections()
 })
