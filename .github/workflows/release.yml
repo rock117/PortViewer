@@ -1,4 +1,4 @@
-name: Manual Release
+name: Cross-Platform Release
 
 on:
   workflow_dispatch:
@@ -17,10 +17,33 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  create-release:
-    name: Create Release
-    runs-on: windows-latest
-    
+  build:
+    name: Build for ${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows
+            target: x86_64-pc-windows-msvc
+            binary: windows-port-viewer.exe
+            archive: zip
+          - os: ubuntu-latest
+            platform: linux
+            target: x86_64-unknown-linux-gnu
+            binary: windows-port-viewer
+            archive: tar.gz
+          - os: macos-latest
+            platform: macos
+            target: x86_64-apple-darwin
+            binary: windows-port-viewer
+            archive: tar.gz
+          - os: macos-latest
+            platform: macos-arm64
+            target: aarch64-apple-darwin
+            binary: windows-port-viewer
+            archive: tar.gz
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -29,7 +52,13 @@ jobs:
       uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: stable
-        targets: x86_64-pc-windows-msvc
+        targets: ${{ matrix.target }}
+        
+    - name: Install Linux dependencies
+      if: matrix.platform == 'linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y pkg-config libssl-dev
         
     - name: Cache cargo registry
       uses: actions/cache@v4
@@ -42,43 +71,105 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-cargo-
           
-    - name: Update version in Cargo.toml
+    - name: Update version in Cargo.toml (Windows)
+      if: matrix.platform == 'windows'
       run: |
         $version = "${{ github.event.inputs.version }}" -replace '^v', ''
-        (Get-Content Cargo.toml) -replace '^version = ".*"', "version = `"$version`"" | Set-Content Cargo.toml
+        (Get-Content src-tauri/Cargo.toml) -replace '^version = ".*"', "version = `"$version`"" | Set-Content src-tauri/Cargo.toml
       shell: powershell
+      
+    - name: Update version in Cargo.toml (Unix)
+      if: matrix.platform != 'windows'
+      run: |
+        version=$(echo "${{ github.event.inputs.version }}" | sed 's/^v//')
+        sed -i "s/^version = \".*\"/version = \"$version\"/" src-tauri/Cargo.toml
       
     - name: Run tests
       run: cargo test --verbose
+      working-directory: src-tauri
       
     - name: Build release binary
-      run: cargo build --release --target x86_64-pc-windows-msvc
+      run: cargo build --release --target ${{ matrix.target }}
+      working-directory: src-tauri
       
-    - name: Create release directory
+    - name: Create release directory (Windows)
+      if: matrix.platform == 'windows'
       run: |
         mkdir release
-        copy target\x86_64-pc-windows-msvc\release\windows-port-viewer.exe release\
+        copy src-tauri\target\${{ matrix.target }}\release\${{ matrix.binary }} release\
         copy README.md release\
         copy LICENSE release\ 2>$null || echo "No LICENSE file found"
         
-    - name: Create version info
+    - name: Create release directory (Unix)
+      if: matrix.platform != 'windows'
+      run: |
+        mkdir -p release
+        cp src-tauri/target/${{ matrix.target }}/release/${{ matrix.binary }} release/
+        cp README.md release/
+        cp LICENSE release/ 2>/dev/null || echo "No LICENSE file found"
+        
+    - name: Create version info (Windows)
+      if: matrix.platform == 'windows'
       run: |
         echo "Windows Port Viewer ${{ github.event.inputs.version }}" > release\VERSION.txt
+        echo "Platform: ${{ matrix.platform }}" >> release\VERSION.txt
+        echo "Target: ${{ matrix.target }}" >> release\VERSION.txt
         echo "Build Date: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" >> release\VERSION.txt
         echo "Commit: ${{ github.sha }}" >> release\VERSION.txt
         echo "Branch: ${{ github.ref_name }}" >> release\VERSION.txt
       shell: powershell
       
-    - name: Create release package
+    - name: Create version info (Unix)
+      if: matrix.platform != 'windows'
       run: |
-        Compress-Archive -Path release\* -DestinationPath windows-port-viewer-${{ github.event.inputs.version }}-windows.zip
+        echo "Windows Port Viewer ${{ github.event.inputs.version }}" > release/VERSION.txt
+        echo "Platform: ${{ matrix.platform }}" >> release/VERSION.txt
+        echo "Target: ${{ matrix.target }}" >> release/VERSION.txt
+        echo "Build Date: $(date '+%Y-%m-%d %H:%M:%S')" >> release/VERSION.txt
+        echo "Commit: ${{ github.sha }}" >> release/VERSION.txt
+        echo "Branch: ${{ github.ref_name }}" >> release/VERSION.txt
+      
+    - name: Create release package (Windows)
+      if: matrix.archive == 'zip'
+      run: |
+        Compress-Archive -Path release\* -DestinationPath windows-port-viewer-${{ github.event.inputs.version }}-${{ matrix.platform }}.zip
       shell: powershell
       
+    - name: Create release package (Unix)
+      if: matrix.archive == 'tar.gz'
+      run: |
+        cd release
+        tar -czf ../windows-port-viewer-${{ github.event.inputs.version }}-${{ matrix.platform }}.tar.gz *
+      
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-port-viewer-${{ matrix.platform }}
+        path: windows-port-viewer-${{ github.event.inputs.version }}-${{ matrix.platform }}.*
+        
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+        
+    - name: Update version in Cargo.toml
+      run: |
+        version=$(echo "${{ github.event.inputs.version }}" | sed 's/^v//')
+        sed -i "s/^version = \".*\"/version = \"$version\"/" src-tauri/Cargo.toml
+        
     - name: Create Git tag
       run: |
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
-        git add Cargo.toml
+        git add src-tauri/Cargo.toml
         git commit -m "Release ${{ github.event.inputs.version }}" || echo "No changes to commit"
         git tag ${{ github.event.inputs.version }}
         git push origin ${{ github.event.inputs.version }}
@@ -87,7 +178,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ github.event.inputs.version }}
-        files: windows-port-viewer-${{ github.event.inputs.version }}-windows.zip
+        files: artifacts/*/*
         name: Windows Port Viewer ${{ github.event.inputs.version }}
         prerelease: ${{ github.event.inputs.prerelease }}
         body: |
@@ -102,10 +193,20 @@ jobs:
           - Modular code architecture for maintainability
           - English interface and comprehensive documentation
           
+          ### Downloads
+          Choose the appropriate version for your operating system:
+          
+          - **Windows (x64)**: `windows-port-viewer-${{ github.event.inputs.version }}-windows.zip`
+          - **Linux (x64)**: `windows-port-viewer-${{ github.event.inputs.version }}-linux.tar.gz`
+          - **macOS (Intel)**: `windows-port-viewer-${{ github.event.inputs.version }}-macos.tar.gz`
+          - **macOS (Apple Silicon)**: `windows-port-viewer-${{ github.event.inputs.version }}-macos-arm64.tar.gz`
+          
           ### Installation
-          1. Download the `windows-port-viewer-${{ github.event.inputs.version }}-windows.zip` file
+          1. Download the appropriate file for your system
           2. Extract the contents to a folder of your choice
-          3. Run `windows-port-viewer.exe` from command line or PowerShell
+          3. Run the executable:
+             - Windows: `windows-port-viewer.exe`
+             - Linux/macOS: `./windows-port-viewer`
           
           ### Usage Examples
           ```bash
@@ -129,9 +230,11 @@ jobs:
           ```
           
           ### System Requirements
-          - Windows 10 or later (x64)
-          - Administrator privileges recommended for complete process name resolution
-          - No additional dependencies required
+          - **Windows**: Windows 10 or later (x64)
+          - **Linux**: Modern Linux distribution with kernel 2.6+ (Ubuntu 18.04+, Fedora 28+, etc.)
+          - **macOS**: macOS 10.15 Catalina or later
+          - Administrator/root privileges recommended for complete process name resolution
+          - No additional dependencies required (portable binaries)
           
           ### Technical Details
           - Built with Rust for performance and safety
