@@ -2365,6 +2365,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "portviewer"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "procfs",
+ "serde",
+ "serde_json",
+ "sysinfo",
+ "tauri",
+ "tauri-build",
+ "uuid",
+ "windows 0.58.0",
+]
+
+[[package]]
 name = "potential_utf"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4371,21 +4386,6 @@ checksum = "9150af68066c4c5c07ddc0ce30421554771e528bde427614c61038bc2c92c2b1"
 dependencies = [
  "windows-core 0.61.2",
  "windows-link",
-]
-
-[[package]]
-name = "windows-port-viewer"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "procfs",
- "serde",
- "serde_json",
- "sysinfo",
- "tauri",
- "tauri-build",
- "uuid",
- "windows 0.58.0",
 ]
 
 [[package]]

@@ -1,8 +1,10 @@
-# Windows Port Viewer
+# PortViewer
 
 🚧 **项目开发中 | Project in Development** 🚧
 
-A modern desktop application for monitoring network port usage on Windows systems, built with **Rust + Tauri 2 + Nuxt 3**.
+A modern cross-platform desktop application for monitoring network port usage, built with **Rust + Tauri 2 + Nuxt 3**.
+
+**Supported Platforms**: Windows, Linux, macOS
 
 ## 🔄 Development Status
 
@@ -11,7 +13,10 @@ A modern desktop application for monitoring network port usage on Windows system
 **Last Updated**: 2025-01-08
 
 ### ✅ Completed Features
-- ✅ Rust backend with Windows API integration
+- ✅ Cross-platform Rust backend with platform-optimized implementations
+  - Windows: Win32 API integration
+  - Linux: procfs crate for reliable /proc parsing
+  - macOS: netstat + lsof commands
 - ✅ Real-time TCP/UDP connection monitoring
 - ✅ Process name resolution and PID tracking
 - ✅ Modern Nuxt 3 frontend with Vue.js components
@@ -37,6 +42,7 @@ A modern desktop application for monitoring network port usage on Windows system
 - 📅 System tray integration
 - 📅 Dark/Light theme toggle
 - 📅 Multi-language support
+- 📅 FreeBSD support
 
 ## 🎆 Features
 
@@ -44,7 +50,7 @@ A modern desktop application for monitoring network port usage on Windows system
 - **Modern GUI**: Built with Tauri 2 for native desktop performance
 - **Vue.js Frontend**: Responsive and interactive user interface
 - **Real-time Updates**: Live connection monitoring with configurable refresh intervals
-- **Cross-platform Ready**: Tauri framework supports future multi-platform deployment
+- **Cross-platform**: Native support for Windows, Linux, and macOS
 
 ### 🔍 Network Monitoring
 - **Comprehensive Port Monitoring**: Display all TCP and UDP connections with detailed information
@@ -62,7 +68,10 @@ A modern desktop application for monitoring network port usage on Windows system
 
 ### Backend
 - **Rust**: High-performance system programming language
-- **Windows API**: Direct integration with Windows networking APIs
+- **Platform-optimized APIs**: 
+  - Windows: Win32 API for native performance
+  - Linux: procfs crate for reliable /proc parsing
+  - macOS: netstat + lsof commands for system integration
 - **Tauri 2**: Modern desktop application framework
 
 ### Frontend
@@ -75,17 +84,20 @@ A modern desktop application for monitoring network port usage on Windows system
 
 ### Prerequisites
 
-- **Windows 10/11**: Required for Windows API access
+- **Operating System**: Windows 10/11, Linux (kernel 2.6+), or macOS 10.15+
 - **Rust Toolchain**: Install from [rustup.rs](https://rustup.rs/)
 - **Node.js**: Version 18+ for frontend development
 - **Tauri CLI**: Install with `cargo install tauri-cli`
+- **Platform-specific dependencies**:
+  - Linux: `pkg-config`, `libssl-dev`
+  - macOS: Xcode command line tools
 
 ### Development Environment
 
 1. **Clone the repository**:
 ```bash
 git clone <repository-url>
-cd windows-port-viewer
+cd PortViewer
 ```
 
 2. **Install frontend dependencies**:
@@ -175,13 +187,16 @@ npm run dev
 #### 生产模式 | Production Mode
 ```bash
 # 运行构建后的可执行文件 | Run built executable
-.\src-tauri\target\release\windows-port-viewer.exe
+# Windows:
+.\src-tauri\target\release\portviewer.exe
+# Linux/macOS:
+./src-tauri/target/release/portviewer
 
 # 带控制台输出运行 | Run with console output
-.\src-tauri\target\release\windows-port-viewer.exe > output.log 2>&1
+.\src-tauri\target\release\portviewer.exe > output.log 2>&1
 
 # 后台运行 | Run in background
-start "" ".\src-tauri\target\release\windows-port-viewer.exe"
+start "" ".\src-tauri\target\release\portviewer.exe"
 ```
 
 ### 📁 构建输出说明 | Build Output Description
@@ -190,10 +205,10 @@ start "" ".\src-tauri\target\release\windows-port-viewer.exe"
 ```
 src-tauri/target/
 ├── debug/                          # 调试版本 | Debug builds
-│   ├── windows-port-viewer.exe     # 调试可执行文件 | Debug executable
+│   ├── portviewer.exe              # 调试可执行文件 | Debug executable
 │   └── deps/                       # 依赖文件 | Dependencies
 ├── release/                        # 发布版本 | Release builds
-│   ├── windows-port-viewer.exe     # 发布可执行文件 | Release executable
+│   ├── portviewer.exe              # 发布可执行文件 | Release executable
 │   ├── bundle/                     # 打包文件 | Bundle files
 │   │   ├── msi/                    # MSI 安装包 | MSI installer
 │   │   └── nsis/                   # NSIS 安装包 | NSIS installer
@@ -202,7 +217,7 @@ src-tauri/target/
 ```
 
 #### 文件说明 | File Description
-- **`windows-port-viewer.exe`**: 主程序可执行文件 | Main executable
+- **`portviewer.exe`** (Windows) / **`portviewer`** (Linux/macOS): 主程序可执行文件 | Main executable
 - **`bundle/msi/`**: Windows MSI 安装包 | Windows MSI installer
 - **`bundle/nsis/`**: NSIS 安装程序 | NSIS installer
 - **`deps/`**: 编译依赖和中间文件 | Compilation dependencies
@@ -249,7 +264,10 @@ npm run build
 cargo tauri build
 
 # Run the built executable
-.\src-tauri\target\release\windows-port-viewer.exe
+# Windows:
+.\src-tauri\target\release\portviewer.exe
+# Linux/macOS:
+./src-tauri/target/release/portviewer
 ```
 
 ### 🎮 User Interface
@@ -278,7 +296,7 @@ For troubleshooting and development:
 RUST_LOG=debug cargo tauri dev
 
 # View console output in release mode
-.\src-tauri\target\release\windows-port-viewer.exe > debug.log 2>&1
+.\src-tauri\target\release\portviewer.exe > debug.log 2>&1
 ```
 
 #### Custom Configuration
@@ -312,17 +330,29 @@ UDP      127.0.0.1:1900         *:*                    LISTENING    20704    svc
 
 ## Technical Details
 
-### Windows APIs Used
+### Platform-Specific APIs Used
 
+#### Windows
 - **GetExtendedTcpTable**: Retrieves TCP connection information with process IDs
 - **GetExtendedUdpTable**: Retrieves UDP connection information with process IDs
 - **OpenProcess**: Opens process handles for querying process information
 - **QueryFullProcessImageNameW**: Gets the full path of process executables
 
+#### Linux
+- **procfs crate**: Reliable parsing of /proc/net/tcp and /proc/net/udp
+- **Process file descriptors**: Socket inode to PID mapping via /proc/[pid]/fd/
+
+#### macOS
+- **netstat command**: Network connection enumeration
+- **lsof command**: Process and file descriptor information
+
 ### Dependencies
 
-- `windows`: Windows API bindings for Rust
-- `clap`: Command-line argument parsing
+- `windows`: Windows API bindings for Rust (Windows only)
+- `procfs`: Linux /proc filesystem parsing (Linux only)
+- `tauri`: Cross-platform desktop application framework
+- `serde`: Serialization framework
+- `chrono`: Date and time handling
 
 ### Connection States
 
@@ -345,7 +375,10 @@ Some processes may show as `<Unknown>` in the Process Name column. This typicall
 - The process has terminated but the connection is still being cleaned up
 - System-level processes that restrict access
 
-To see more process names, consider running the tool with administrator privileges.
+To see more process names:
+- **Windows**: Run as Administrator
+- **Linux**: Run with sudo or as root
+- **macOS**: Run with sudo or grant necessary permissions
 
 ## Use Cases
 
@@ -363,12 +396,16 @@ To see more process names, consider running the tool with administrator privileg
 - Run the tool as Administrator for better process name resolution
 
 **No Output or Empty Results:**
-- Ensure Windows Firewall is not blocking the application
+- Ensure firewall is not blocking the application
 - Check if you have necessary permissions to query network information
+- On Linux: Verify /proc filesystem is mounted and accessible
+- On macOS: Ensure netstat and lsof commands are available
 
 **Build Errors:**
 - Ensure you have the latest Rust toolchain installed
-- Verify Windows SDK is available for the `windows` crate
+- **Windows**: Verify Windows SDK is available for the `windows` crate
+- **Linux**: Install required packages: `sudo apt-get install pkg-config libssl-dev`
+- **macOS**: Install Xcode command line tools: `xcode-select --install`
 
 ## 🤝 Contributing
 
@@ -376,7 +413,7 @@ To see more process names, consider running the tool with administrator privileg
 
 ### 🐛 Reporting Issues
 - Use GitHub Issues to report bugs or request features
-- Include system information (Windows version, Rust version)
+- Include system information (OS version, Rust version)
 - Provide steps to reproduce any issues
 - Screenshots are helpful for UI-related issues
 
@@ -414,7 +451,7 @@ To see more process names, consider running the tool with administrator privileg
 - 🌍 Multi-language support
 - 🛡️ Security monitoring features
 - 📊 Advanced analytics dashboard
-- 🔌 Cross-platform support (macOS, Linux)
+- 🔌 FreeBSD support
 
 ## 📜 License
 
@@ -423,6 +460,7 @@ This project is open source. Please refer to the license file for details.
 ## 📅 Changelog
 
 ### Version 0.1.0-dev (Current)
+- ✨ **NEW**: Cross-platform support (Windows, Linux, macOS)
 - ✨ **NEW**: Modern Tauri 2 + Nuxt 3 architecture
 - ✨ **NEW**: Real-time GUI with Vue.js components
 - ✨ **NEW**: Auto-refresh with configurable intervals
@@ -430,9 +468,10 @@ This project is open source. Please refer to the license file for details.
 - ✨ **NEW**: Anti-jitter UI improvements
 - ✨ **NEW**: Responsive design with Tailwind CSS
 - ✨ **NEW**: Connection statistics and sorting
+- ✨ **NEW**: Platform-optimized implementations
 - 🔄 **MIGRATED**: From CLI to desktop GUI application
 - 🔄 **IMPROVED**: Better process name resolution
-- 🔄 **ENHANCED**: Windows API integration
+- 🔄 **ENHANCED**: Native API integrations
 
 ### Legacy Version 1.0.0 (CLI)
 - ✅ Initial CLI release with TCP/UDP monitoring

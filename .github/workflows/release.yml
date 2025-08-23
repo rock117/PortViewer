@@ -111,7 +111,7 @@ jobs:
     - name: Create version info (Windows)
       if: matrix.platform == 'windows'
       run: |
-        echo "Windows Port Viewer ${{ github.event.inputs.version }}" > release\VERSION.txt
+        echo "PortViewer ${{ github.event.inputs.version }}" > release\VERSION.txt
         echo "Platform: ${{ matrix.platform }}" >> release\VERSION.txt
         echo "Target: ${{ matrix.target }}" >> release\VERSION.txt
         echo "Build Date: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" >> release\VERSION.txt
@@ -122,7 +122,7 @@ jobs:
     - name: Create version info (Unix)
       if: matrix.platform != 'windows'
       run: |
-        echo "Windows Port Viewer ${{ github.event.inputs.version }}" > release/VERSION.txt
+        echo "PortViewer ${{ github.event.inputs.version }}" > release/VERSION.txt
         echo "Platform: ${{ matrix.platform }}" >> release/VERSION.txt
         echo "Target: ${{ matrix.target }}" >> release/VERSION.txt
         echo "Build Date: $(date '+%Y-%m-%d %H:%M:%S')" >> release/VERSION.txt
@@ -132,20 +132,20 @@ jobs:
     - name: Create release package (Windows)
       if: matrix.archive == 'zip'
       run: |
-        Compress-Archive -Path release\* -DestinationPath windows-port-viewer-${{ github.event.inputs.version }}-${{ matrix.platform }}.zip
+        Compress-Archive -Path release\* -DestinationPath portviewer-${{ github.event.inputs.version }}-${{ matrix.platform }}.zip
       shell: powershell
       
     - name: Create release package (Unix)
       if: matrix.archive == 'tar.gz'
       run: |
         cd release
-        tar -czf ../windows-port-viewer-${{ github.event.inputs.version }}-${{ matrix.platform }}.tar.gz *
+        tar -czf ../portviewer-${{ github.event.inputs.version }}-${{ matrix.platform }}.tar.gz *
       
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: windows-port-viewer-${{ matrix.platform }}
-        path: windows-port-viewer-${{ github.event.inputs.version }}-${{ matrix.platform }}.*
+        name: portviewer-${{ matrix.platform }}
+        path: portviewer-${{ github.event.inputs.version }}-${{ matrix.platform }}.*
         
   release:
     name: Create GitHub Release
@@ -179,54 +179,42 @@ jobs:
       with:
         tag_name: ${{ github.event.inputs.version }}
         files: artifacts/*/*
-        name: Windows Port Viewer ${{ github.event.inputs.version }}
+        name: PortViewer ${{ github.event.inputs.version }}
         prerelease: ${{ github.event.inputs.prerelease }}
         body: |
-          ## Windows Port Viewer ${{ github.event.inputs.version }}
+          ## PortViewer ${{ github.event.inputs.version }}
           
           ### Features
-          - List TCP and UDP network connections on Windows
-          - Display process names for each connection
+          - Cross-platform TCP and UDP port monitoring (Windows, Linux, macOS)
+          - Display process names and PIDs for each connection
           - Filter by protocol (TCP/UDP) and port number
           - Clean tabular output format with aligned columns
-          - Type-safe enum-based protocol and connection state handling
-          - Modular code architecture for maintainability
-          - English interface and comprehensive documentation
+          - Platform-optimized implementations for best performance
+          - Portable binaries with zero dependencies
+          - Modern GUI interface built with Tauri
           
           ### Downloads
           Choose the appropriate version for your operating system:
           
-          - **Windows (x64)**: `windows-port-viewer-${{ github.event.inputs.version }}-windows.zip`
-          - **Linux (x64)**: `windows-port-viewer-${{ github.event.inputs.version }}-linux.tar.gz`
-          - **macOS (Intel)**: `windows-port-viewer-${{ github.event.inputs.version }}-macos.tar.gz`
-          - **macOS (Apple Silicon)**: `windows-port-viewer-${{ github.event.inputs.version }}-macos-arm64.tar.gz`
+          - **Windows (x64)**: `portviewer-${{ github.event.inputs.version }}-windows.zip`
+          - **Linux (x64)**: `portviewer-${{ github.event.inputs.version }}-linux.tar.gz`
+          - **macOS (Intel)**: `portviewer-${{ github.event.inputs.version }}-macos.tar.gz`
+          - **macOS (Apple Silicon)**: `portviewer-${{ github.event.inputs.version }}-macos-arm64.tar.gz`
           
           ### Installation
           1. Download the appropriate file for your system
           2. Extract the contents to a folder of your choice
           3. Run the executable:
-             - Windows: `windows-port-viewer.exe`
-             - Linux/macOS: `./windows-port-viewer`
+             - Windows: `portviewer.exe`
+             - Linux/macOS: `./portviewer`
           
           ### Usage Examples
           ```bash
-          # Show all network connections
-          windows-port-viewer.exe
+          # Launch GUI application
+          portviewer.exe
           
-          # Show only TCP connections
-          windows-port-viewer.exe --protocol tcp
-          
-          # Show only UDP connections  
-          windows-port-viewer.exe --protocol udp
-          
-          # Filter connections by specific port (local or remote)
-          windows-port-viewer.exe --port 443
-          
-          # Combine filters: TCP connections on port 80
-          windows-port-viewer.exe --protocol tcp --port 80
-          
-          # Show help and all available options
-          windows-port-viewer.exe --help
+          # Or use command line interface (if available)
+          portviewer.exe --help
           ```
           
           ### System Requirements
@@ -237,10 +225,13 @@ jobs:
           - No additional dependencies required (portable binaries)
           
           ### Technical Details
-          - Built with Rust for performance and safety
-          - Uses Windows API for native network connection enumeration
+          - Built with Rust and Tauri for performance and cross-platform compatibility
+          - Platform-specific optimizations:
+            - Windows: Win32 API for native performance
+            - Linux: procfs crate for reliable /proc parsing
+            - macOS: netstat + lsof commands for system integration
+          - Modern web-based GUI with Vue.js frontend
           - Type-safe enum system for protocols and connection states
-          - Modular architecture with comprehensive unit tests
           
           **Build Information:**
           - Commit: ${{ github.sha }}
