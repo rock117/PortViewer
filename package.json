@@ -1,7 +1,7 @@
 {
   "name": "windows-port-viewer-nuxt",
   "version": "1.0.0",
-  "description": "Windows Port Viewer - Nuxt Frontend",
+  "description": "Port Viewer - Nuxt Frontend",
   "private": true,
   "scripts": {
     "build": "nuxt build",

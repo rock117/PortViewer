@@ -1,8 +1,8 @@
-# Windows Port Viewer - Tauri 2 重构完成状态
+# Port Viewer - Tauri 2 重构完成状态
 
 ## 🎉 项目重构成功完成！
 
-Windows Port Viewer 项目已成功按照 Tauri 2 官方结构重构，移除了 CLI 支持，专注于现代化 GUI 应用程序。
+Port Viewer 项目已成功按照 Tauri 2 官方结构重构，移除了 CLI 支持，专注于现代化 GUI 应用程序。
 
 ## ✅ 已完成的工作
 
@@ -154,7 +154,7 @@ cargo build --offline
 
 ## 🏆 总结
 
-**Windows Port Viewer 的 Tauri 2 重构已经 100% 完成！**
+**Port Viewer 的 Tauri 2 重构已经 100% 完成！**
 
 - ✅ 所有代码重构完成
 - ✅ 项目结构符合官方标准

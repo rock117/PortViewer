@@ -7,7 +7,7 @@
           <div class="flex items-center">
             <div class="flex-shrink-0">
               <h1 class="text-2xl font-bold text-gray-900">
-                {{ platformInfo?.platform || 'Cross-Platform' }} Port Viewer
+                Port Viewer
               </h1>
             </div>
             <div class="ml-4">
@@ -74,7 +74,7 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div class="flex items-center justify-between">
           <p class="text-sm text-gray-600">
-            Windows Port Viewer - Built with Nuxt 3 and Tauri 2
+            Port Viewer - Built with Nuxt 3 and Tauri 2
           </p>
           <div class="flex items-center space-x-4 text-sm text-gray-500">
             <span>Last updated: {{ lastUpdated }}</span>
@@ -99,7 +99,7 @@ export interface FilterState {
 
 // Set page meta
 useHead({
-  title: 'Windows Port Viewer',
+  title: 'Port Viewer',
   meta: [
     { name: 'description', content: 'Monitor Windows TCP/UDP port usage with process information' }
   ]

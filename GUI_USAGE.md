@@ -1,8 +1,8 @@
-# Windows Port Viewer - GUI 使用指南
+# Port Viewer - GUI 使用指南
 
 ## 🎉 Tauri 2 GUI 应用程序已完成！
 
-Windows Port Viewer 现在支持两种运行模式：
+Port Viewer 现在支持两种运行模式：
 - **命令行模式 (CLI)** - 传统的终端界面
 - **图形界面模式 (GUI)** - 现代化的桌面应用程序
 
@@ -53,7 +53,7 @@ cargo run -- --help
 ### 界面布局
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                Windows Port Viewer                     │
+│                Port Viewer                     │
 │           Monitor and analyze network connections       │
 ├─────────────────────────────────────────────────────────┤
 │ Protocol: [All ▼] Port: [____] [🔄 Refresh]           │
@@ -208,7 +208,7 @@ windows-port-viewer/
 
 ## 🎉 总结
 
-Windows Port Viewer 现在是一个功能完整的现代化桌面应用程序，提供：
+Port Viewer 现在是一个功能完整的现代化桌面应用程序，提供：
 - 双模式支持（CLI + GUI）
 - 实时网络监控
 - 直观的用户界面

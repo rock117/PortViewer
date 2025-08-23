@@ -1,5 +1,5 @@
 {
-  "productName": "Windows Port Viewer",
+  "productName": "Port Viewer",
   "version": "0.1.0",
   "identifier": "com.windows-port-viewer.app",
   "build": {
@@ -11,7 +11,7 @@
   "app": {
     "windows": [
       {
-        "title": "Windows Port Viewer",
+        "title": "Port Viewer",
         "width": 1400,
         "height": 900,
         "minWidth": 800,

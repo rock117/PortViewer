@@ -50,7 +50,7 @@ jobs:
         
     - name: Create version info
       run: |
-        echo "Windows Port Viewer" > release\VERSION.txt
+        echo "Port Viewer" > release\VERSION.txt
         echo "Build Date: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" >> release\VERSION.txt
         echo "Commit: ${{ github.sha }}" >> release\VERSION.txt
         echo "Branch: ${{ github.ref_name }}" >> release\VERSION.txt
@@ -74,9 +74,9 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: windows-port-viewer-${{ github.ref_name }}-windows.zip
-        name: Windows Port Viewer ${{ github.ref_name }}
+        name: Port Viewer ${{ github.ref_name }}
         body: |
-          ## Windows Port Viewer ${{ github.ref_name }}
+          ## Port Viewer ${{ github.ref_name }}
           
           ### Features
           - List TCP and UDP network connections
