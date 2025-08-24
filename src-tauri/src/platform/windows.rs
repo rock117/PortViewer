@@ -1,10 +1,12 @@
 use std::ffi::c_void;
-use windows::Win32::Foundation::FALSE;
+use windows::Win32::Foundation::{FALSE, HANDLE, CloseHandle};
 use windows::Win32::NetworkManagement::IpHelper::{
     GetExtendedTcpTable, GetExtendedUdpTable, MIB_TCPROW_OWNER_PID, MIB_UDPROW_OWNER_PID,
     TCP_TABLE_OWNER_PID_ALL, UDP_TABLE_OWNER_PID,
 };
 use windows::Win32::Networking::WinSock::AF_INET;
+use windows::Win32::System::ProcessStatus::GetModuleBaseNameA;
+use windows::Win32::System::Threading::{OpenProcess, PROCESS_QUERY_INFORMATION, PROCESS_VM_READ};
 
 use crate::models::{ConnectionInfo, Protocol, ConnectionState};
 use crate::platform::{NetworkProvider, NetworkError};
@@ -16,6 +18,37 @@ pub struct WindowsNetworkProvider;
 impl WindowsNetworkProvider {
     pub fn new() -> Self {
         Self
+    }
+
+    /// Get process name from PID using Windows API
+    fn get_process_name(&self, pid: u32) -> String {
+        if pid == 0 {
+            return "System".to_string();
+        }
+
+        unsafe {
+            let process_handle = OpenProcess(
+                PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
+                FALSE,
+                pid,
+            );
+
+            if let Ok(handle) = process_handle {
+                let mut buffer = [0u8; 260]; // MAX_PATH
+                let result = GetModuleBaseNameA(handle, None, &mut buffer);
+                
+                let _ = CloseHandle(handle);
+                
+                if result > 0 {
+                    let name_bytes = &buffer[..result as usize];
+                    if let Ok(name) = std::str::from_utf8(name_bytes) {
+                        return name.to_string();
+                    }
+                }
+            }
+        }
+
+        "unknown".to_string()
     }
 }
 
@@ -89,7 +122,7 @@ impl NetworkProvider for WindowsNetworkProvider {
                 let remote_port = u16::from_be(entry.dwRemotePort as u16);
                 let state = ConnectionState::from(entry.dwState);
                 let pid = entry.dwOwningPid;
-                let process_name = "".into();
+                let process_name = self.get_process_name(pid);
 
                 connections.push(ConnectionInfo::new(
                     Protocol::TCP,
@@ -156,7 +189,7 @@ impl NetworkProvider for WindowsNetworkProvider {
                 let local_addr = format_ip_address(entry.dwLocalAddr);
                 let local_port = u16::from_be(entry.dwLocalPort as u16);
                 let pid = entry.dwOwningPid;
-                let process_name = "".into();
+                let process_name = self.get_process_name(pid);
 
                 connections.push(ConnectionInfo::new(
                     Protocol::UDP,
