@@ -8,7 +8,7 @@ use windows::Win32::Networking::WinSock::AF_INET;
 
 use crate::models::{ConnectionInfo, Protocol, ConnectionState};
 use crate::platform::{NetworkProvider, NetworkError};
-use crate::process::{get_process_name, format_ip_address};
+
 
 /// Windows-specific network provider using Win32 API
 pub struct WindowsNetworkProvider;
@@ -89,7 +89,7 @@ impl NetworkProvider for WindowsNetworkProvider {
                 let remote_port = u16::from_be(entry.dwRemotePort as u16);
                 let state = ConnectionState::from(entry.dwState);
                 let pid = entry.dwOwningPid;
-                let process_name = get_process_name(pid);
+                let process_name = "".into();
 
                 connections.push(ConnectionInfo::new(
                     Protocol::TCP,
@@ -156,7 +156,7 @@ impl NetworkProvider for WindowsNetworkProvider {
                 let local_addr = format_ip_address(entry.dwLocalAddr);
                 let local_port = u16::from_be(entry.dwLocalPort as u16);
                 let pid = entry.dwOwningPid;
-                let process_name = get_process_name(pid);
+                let process_name = "".into();
 
                 connections.push(ConnectionInfo::new(
                     Protocol::UDP,
@@ -183,3 +183,10 @@ impl NetworkProvider for WindowsNetworkProvider {
         true
     }
 }
+
+
+fn format_ip_address(addr: u32) -> String {
+    let bytes = addr.to_le_bytes();
+    format!("{}.{}.{}.{}", bytes[0], bytes[1], bytes[2], bytes[3])
+}
+

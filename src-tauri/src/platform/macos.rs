@@ -93,8 +93,7 @@ impl MacOSNetworkProvider {
         let (pid, process_name) = process_map
             .get(local_addr)
             .or_else(|| process_map.get(&format!("{}:{}", local_ip, local_port)))
-            .copied()
-            .unwrap_or((0, "unknown".to_string()));
+            .unwrap_or(&(0, "unknown".to_string())).clone();
 
         Some(ConnectionInfo::new(
             Protocol::TCP,
@@ -128,9 +127,8 @@ impl MacOSNetworkProvider {
         // Try to find process info
         let (pid, process_name) = process_map
             .get(local_addr)
-            .or_else(|| process_map.get(&format!("{}:{}", local_ip, local_port)))
-            .copied()
-            .unwrap_or((0, "unknown".to_string()));
+            .or_else(|| process_map.get(&format!("{}:{}", local_ip.clone(), local_port)))
+            .unwrap_or(&(0, "unknown".to_string())).clone();
 
         Some(ConnectionInfo::new(
             Protocol::UDP,
@@ -175,16 +173,16 @@ impl MacOSNetworkProvider {
         match state_str.to_uppercase().as_str() {
             "ESTABLISHED" => ConnectionState::Established,
             "SYN_SENT" => ConnectionState::SynSent,
-            "SYN_RCVD" => ConnectionState::SynRecv,
+            "SYN_RCVD" => ConnectionState::SynRcvd,
             "FIN_WAIT_1" => ConnectionState::FinWait1,
             "FIN_WAIT_2" => ConnectionState::FinWait2,
             "TIME_WAIT" => ConnectionState::TimeWait,
-            "CLOSED" => ConnectionState::Close,
+            "CLOSED" => ConnectionState::Closed,
             "CLOSE_WAIT" => ConnectionState::CloseWait,
             "LAST_ACK" => ConnectionState::LastAck,
             "LISTEN" => ConnectionState::Listening,
             "CLOSING" => ConnectionState::Closing,
-            _ => ConnectionState::Unknown,
+            _ => ConnectionState::Unknown(0),// TODO
         }
     }
 }
