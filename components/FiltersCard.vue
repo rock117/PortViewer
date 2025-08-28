@@ -5,7 +5,7 @@
       <div class="flex flex-col md:flex-row gap-4 flex-1">
         <!-- Protocol Filter -->
         <div class="flex flex-col">
-          <label class="text-sm font-medium text-gray-700 mb-1">Protocol</label>
+          <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Protocol</label>
           <select 
             :value="filters.protocol" 
             @change="updateFilter('protocol', ($event.target as HTMLSelectElement).value)"
@@ -19,7 +19,7 @@
 
         <!-- Port Filter -->
         <div class="flex flex-col">
-          <label class="text-sm font-medium text-gray-700 mb-1">Port</label>
+          <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Port</label>
           <input 
             type="text" 
             :value="filters.port"
@@ -31,7 +31,7 @@
 
         <!-- Process Filter -->
         <div class="flex flex-col">
-          <label class="text-sm font-medium text-gray-700 mb-1">Process</label>
+          <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Process</label>
           <input 
             type="text" 
             :value="filters.process"
@@ -45,7 +45,7 @@
       <!-- Action Buttons -->
       <div class="flex items-center gap-4">
         <!-- Auto Refresh Settings -->
-        <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border">
+        <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
           <!-- Auto Refresh Toggle -->
           <div class="flex items-center">
             <input 
@@ -53,20 +53,20 @@
               id="autoRefresh"
               :checked="autoRefresh"
               @change="toggleAutoRefresh"
-              class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+              class="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 cursor-pointer"
             />
-            <label for="autoRefresh" class="ml-2 text-sm font-medium text-gray-700 cursor-pointer">
+            <label for="autoRefresh" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
               Auto Refresh
             </label>
           </div>
 
           <!-- Refresh Interval Selector -->
           <div class="flex items-center gap-2" v-if="autoRefresh">
-            <span class="text-sm text-gray-600">Every</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400">Every</span>
             <select 
               :value="refreshIntervalSeconds"
               @change="setRefreshInterval(parseInt(($event.target as HTMLSelectElement).value))"
-              class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-blue-500 focus:border-blue-500"
+              class="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="2">2s</option>
               <option value="5">5s</option>
@@ -79,7 +79,7 @@
           <!-- Auto Refresh Status -->
           <div class="flex items-center gap-1" v-if="autoRefresh">
             <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span class="text-xs text-green-600">Active</span>
+            <span class="text-xs text-green-600 dark:text-green-400">Active</span>
           </div>
         </div>
 

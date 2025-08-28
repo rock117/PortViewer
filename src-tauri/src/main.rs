@@ -115,9 +115,38 @@ fn get_platform_info() -> serde_json::Value {
     })
 }
 
+// Window control commands
+#[tauri::command]
+async fn minimize_window(window: tauri::Window) -> Result<(), String> {
+    window.minimize().map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn toggle_maximize(window: tauri::Window) -> Result<(), String> {
+    let is_maximized = window.is_maximized().map_err(|e| e.to_string())?;
+    if is_maximized {
+        window.unmaximize().map_err(|e| e.to_string())
+    } else {
+        window.maximize().map_err(|e| e.to_string())
+    }
+}
+
+#[tauri::command]
+async fn close_window(window: tauri::Window) -> Result<(), String> {
+    window.close().map_err(|e| e.to_string())
+}
+
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![get_connections, get_filtered_connections, log_message, get_platform_info])
+        .invoke_handler(tauri::generate_handler![
+            get_connections, 
+            get_filtered_connections, 
+            log_message, 
+            get_platform_info,
+            minimize_window,
+            toggle_maximize,
+            close_window
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

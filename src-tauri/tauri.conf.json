@@ -21,7 +21,8 @@
         "minimizable": true,
         "closable": true,
         "center": true,
-        "devtools": true
+        "devtools": true,
+        "decorations": false
       }
     ],
     "security": {

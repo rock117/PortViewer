@@ -32,27 +32,27 @@
 
 /* Custom component styles */
 .card {
-  @apply bg-white rounded-lg shadow-md border border-gray-200 p-6;
+  @apply bg-white dark:bg-slate-700 rounded-lg shadow-md border border-gray-200 dark:border-slate-600 p-6;
 }
 
 .btn-primary {
-  @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200;
+  @apply bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200;
 }
 
 .btn-secondary {
-  @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md transition-colors duration-200;
+  @apply bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-medium py-2 px-4 rounded-md transition-colors duration-200;
 }
 
 .input-field {
-  @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+  @apply w-full px-3 py-2 border border-gray-300 dark:border-slate-500 rounded-md bg-white dark:bg-slate-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
 }
 
 .table-header {
-  @apply bg-gray-50 text-gray-700 font-semibold text-sm uppercase tracking-wider;
+  @apply bg-gray-50 dark:bg-slate-600 text-gray-700 dark:text-gray-300 font-semibold text-sm uppercase tracking-wider;
 }
 
 .table-cell {
-  @apply px-6 py-4 whitespace-nowrap text-sm text-gray-900;
+  @apply px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100;
 }
 
 /* Loading animation */
@@ -62,13 +62,13 @@
 
 /* Status indicators */
 .status-listening {
-  @apply text-green-600 bg-green-100 px-2 py-1 rounded-full text-xs font-medium;
+  @apply text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-full text-xs font-medium;
 }
 
 .status-established {
-  @apply text-blue-600 bg-blue-100 px-2 py-1 rounded-full text-xs font-medium;
+  @apply text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded-full text-xs font-medium;
 }
 
 .status-other {
-  @apply text-gray-600 bg-gray-100 px-2 py-1 rounded-full text-xs font-medium;
+  @apply text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full text-xs font-medium;
 }

@@ -1,34 +1,80 @@
 <template>
-  <div class="h-screen bg-gray-50 flex flex-col overflow-hidden">
+  <div class="h-screen bg-gray-50 dark:bg-slate-800 flex flex-col overflow-hidden">
+    <!-- Custom Title Bar -->
+    <div class="h-8 bg-white dark:bg-slate-700 flex items-center justify-between px-4 flex-shrink-0" data-tauri-drag-region>
+      <div class="text-sm font-medium text-gray-700 dark:text-gray-300">Port Viewer</div>
+      <div class="flex space-x-1" data-tauri-drag-region="false">
+        <!-- Minimize Button -->
+        <button 
+          @click="minimizeWindow"
+          class="w-6 h-6 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-slate-600 rounded text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+          title="Minimize"
+          data-tauri-drag-region="false"
+        >
+          <svg width="10" height="1" viewBox="0 0 10 1" fill="currentColor">
+            <rect width="10" height="1"/>
+          </svg>
+        </button>
+        
+        <!-- Maximize/Restore Button -->
+        <button 
+          @click="toggleMaximize"
+          class="w-6 h-6 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-slate-600 rounded text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+          title="Maximize"
+          data-tauri-drag-region="false"
+        >
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1">
+            <rect x="1" y="1" width="8" height="8"/>
+          </svg>
+        </button>
+        
+        <!-- Close Button -->
+        <button 
+          @click="closeWindow"
+          class="w-6 h-6 flex items-center justify-center hover:bg-red-500 rounded text-gray-600 dark:text-gray-400 hover:text-white transition-colors"
+          title="Close"
+          data-tauri-drag-region="false"
+        >
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="m1 1 8 8M9 1l-8 8"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    
     <!-- Header -->
-    <header class="bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
+    <header class="bg-white dark:bg-slate-700 shadow-sm border-b border-gray-200 dark:border-slate-600 flex-shrink-0">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
           <div class="flex items-center">
             <div class="flex-shrink-0">
-              <h1 class="text-2xl font-bold text-gray-900">
+              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
                 Port Viewer
               </h1>
             </div>
             <div class="ml-4">
-              <p class="text-sm text-gray-600">Monitor TCP/UDP port usage and process information</p>
-              <p v-if="platformInfo" class="text-xs text-gray-500">
+              <p class="text-sm text-gray-600 dark:text-gray-300">Monitor TCP/UDP port usage and process information</p>
+              <p v-if="platformInfo" class="text-xs text-gray-500 dark:text-gray-400">
                 {{ platformInfo.os }}/{{ platformInfo.architecture }} 
-                <span :class="platformInfo.supported ? 'text-green-600' : 'text-red-600'">
+                <span :class="platformInfo.supported ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
                   {{ platformInfo.supported ? '✓ Supported' : '✗ Not Supported' }}
                 </span>
               </p>
             </div>
           </div>
           
-          <!-- Status Indicator -->
-          <div class="flex items-center space-x-2">
+          <!-- Theme Toggle and Status -->
+          <div class="flex items-center space-x-4">
+            <!-- Theme Toggle -->
+            <ThemeToggle />
+            
+            <!-- Status Indicator -->
             <div class="flex items-center">
               <div 
                 class="w-2 h-2 rounded-full mr-2"
                 :class="isLoading ? 'bg-yellow-400' : error ? 'bg-red-400' : 'bg-green-400'"
               ></div>
-              <span class="text-sm text-gray-600">
+              <span class="text-sm text-gray-600 dark:text-gray-300">
                 {{ isLoading ? 'Loading...' : error ? 'Error' : 'Connected' }}
               </span>
             </div>
@@ -70,15 +116,15 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white border-t border-gray-200 flex-shrink-0">
+    <footer class="bg-white dark:bg-slate-700 border-t border-gray-200 dark:border-slate-600 flex-shrink-0">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div class="flex items-center justify-between">
-          <p class="text-sm text-gray-600">
+          <p class="text-sm text-gray-600 dark:text-gray-300">
             Port Viewer - Built with Nuxt 3 and Tauri 2
           </p>
-          <div class="flex items-center space-x-4 text-sm text-gray-500">
+          <div class="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
             <span>Last updated: {{ lastUpdated }}</span>
-            <kbd class="px-2 py-1 bg-gray-100 rounded text-xs">F5</kbd>
+            <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs">F5</kbd>
             <span>Refresh</span>
           </div>
         </div>
@@ -91,6 +137,8 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { logger } from '~/utils/logger'
 import type { ConnectionInfo } from '../plugins/tauri.client'
+import { useTheme } from '~/composables/useTheme'
+import { invoke } from '@tauri-apps/api/core'
 export interface FilterState {
   protocol: 'all' | 'tcp' | 'udp'
   port: string
@@ -259,16 +307,83 @@ const fetchPlatformInfo = async () => {
   }
 }
 
+// Initialize theme
+const { applyTheme } = useTheme()
+
 // Initialize on mount
 onMounted(async () => {
   // Add keyboard event listener
   window.addEventListener('keydown', handleKeydown)
+  
+  // Initialize theme
+  applyTheme()
   
   // Fetch platform info and connections
   await fetchPlatformInfo()
   allConnections.value = await fetchConnections()
   updateFilterConnections()
 })
+
+// Window control functions using Tauri commands
+const minimizeWindow = async () => {
+  try {
+    console.log('Minimizing window...')
+    await invoke('minimize_window')
+    console.log('Window minimized successfully')
+  } catch (err) {
+    console.error('Failed to minimize window:', err)
+    // Fallback: try using window API directly
+    try {
+      if (window && (window as any).__TAURI__) {
+        await (window as any).__TAURI__.window.appWindow.minimize()
+      }
+    } catch (fallbackErr) {
+      console.error('Fallback also failed:', fallbackErr)
+    }
+  }
+}
+
+const toggleMaximize = async () => {
+  try {
+    console.log('Toggling maximize...')
+    await invoke('toggle_maximize')
+    console.log('Window maximize toggled successfully')
+  } catch (err) {
+    console.error('Failed to toggle maximize:', err)
+    // Fallback: try using window API directly
+    try {
+      if (window && (window as any).__TAURI__) {
+        const appWindow = (window as any).__TAURI__.window.appWindow
+        const isMaximized = await appWindow.isMaximized()
+        if (isMaximized) {
+          await appWindow.unmaximize()
+        } else {
+          await appWindow.maximize()
+        }
+      }
+    } catch (fallbackErr) {
+      console.error('Fallback also failed:', fallbackErr)
+    }
+  }
+}
+
+const closeWindow = async () => {
+  try {
+    console.log('Closing window...')
+    await invoke('close_window')
+    console.log('Window closed successfully')
+  } catch (err) {
+    console.error('Failed to close window:', err)
+    // Fallback: try using window API directly
+    try {
+      if (window && (window as any).__TAURI__) {
+        await (window as any).__TAURI__.window.appWindow.close()
+      }
+    } catch (fallbackErr) {
+      console.error('Fallback also failed:', fallbackErr)
+    }
+  }
+}
 
 // Cleanup on unmount
 onUnmounted(() => {

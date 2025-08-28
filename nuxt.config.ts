@@ -3,6 +3,13 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@nuxtjs/tailwindcss'],
   
+  // Enable dark mode support
+  tailwindcss: {
+    config: {
+      darkMode: 'class'
+    }
+  },
+  
   // Tauri specific configuration
   ssr: false, // Disable SSR for Tauri desktop app
   
