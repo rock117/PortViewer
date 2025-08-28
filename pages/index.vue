@@ -2,7 +2,10 @@
   <div class="h-screen bg-gray-50 dark:bg-slate-800 flex flex-col overflow-hidden">
     <!-- Custom Title Bar -->
     <div class="h-8 bg-white dark:bg-slate-700 flex items-center justify-between px-4 flex-shrink-0" data-tauri-drag-region>
-      <div class="text-sm font-medium text-gray-700 dark:text-gray-300">Port Viewer</div>
+      <div class="flex items-center space-x-2">
+        <img src="/icon.png" alt="Port Viewer" class="w-4 h-4" />
+        <div class="text-sm font-medium text-gray-700 dark:text-gray-300">Port Viewer</div>
+      </div>
       <div class="flex space-x-1" data-tauri-drag-region="false">
         <!-- Minimize Button -->
         <button 
