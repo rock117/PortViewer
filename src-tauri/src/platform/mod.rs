@@ -36,6 +36,8 @@ pub enum NetworkError {
     FileSystemError(String),
     /// Command execution failed (macOS/FreeBSD netstat)
     CommandFailed(String),
+    /// Required system command not found (e.g., lsof not installed)
+    CommandNotFound(String),
     /// Data parsing error
     ParseError(String),
     /// Generic I/O error
@@ -50,6 +52,7 @@ impl fmt::Display for NetworkError {
             NetworkError::SystemCallFailed(msg) => write!(f, "System call failed: {}", msg),
             NetworkError::FileSystemError(msg) => write!(f, "File system error: {}", msg),
             NetworkError::CommandFailed(msg) => write!(f, "Command failed: {}", msg),
+            NetworkError::CommandNotFound(msg) => write!(f, "Command not found: {}", msg),
             NetworkError::ParseError(msg) => write!(f, "Parse error: {}", msg),
             NetworkError::IoError(msg) => write!(f, "I/O error: {}", msg),
         }

@@ -20,6 +20,13 @@ const fetchConnections = async (): Promise<ConnectionInfo[]> => {
   } catch (err: unknown) {
     const error = err instanceof Error ? err.message : 'Failed to fetch connections'
     logger.error('Error fetching connections:', err)
+    
+    // Check if it's a lsof not found error
+    if (error.includes('lsof command not found') || error.includes('Command not found')) {
+      throw new Error('LSOF_NOT_FOUND: ' + error)
+    }
+    
+    throw err
   } finally {
   }
   return conns

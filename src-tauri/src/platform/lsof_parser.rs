@@ -19,7 +19,13 @@ impl LsofParser {
         let output = Command::new("lsof")
             .args(&[&protocol_arg, "-n", "-P"])
             .output()
-            .map_err(|e| NetworkError::CommandFailed(format!("Failed to execute lsof: {}", e)))?;
+            .map_err(|e| {
+                if e.kind() == std::io::ErrorKind::NotFound {
+                    NetworkError::CommandNotFound("lsof command not found. Please install lsof to view network connections.".to_string())
+                } else {
+                    NetworkError::CommandFailed(format!("Failed to execute lsof: {}", e))
+                }
+            })?;
 
         if !output.status.success() {
             return Err(NetworkError::CommandFailed(format!(
@@ -36,7 +42,13 @@ impl LsofParser {
         let output = Command::new("lsof")
             .args(&["-i", "-n", "-P"])
             .output()
-            .map_err(|e| NetworkError::CommandFailed(format!("Failed to execute lsof: {}", e)))?;
+            .map_err(|e| {
+                if e.kind() == std::io::ErrorKind::NotFound {
+                    NetworkError::CommandNotFound("lsof command not found. Please install lsof to view network connections.".to_string())
+                } else {
+                    NetworkError::CommandFailed(format!("Failed to execute lsof: {}", e))
+                }
+            })?;
 
         if !output.status.success() {
             return Err(NetworkError::CommandFailed(format!(
