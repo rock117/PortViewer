@@ -13,16 +13,12 @@ jobs:
       matrix:
         platform:
           - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
             archive: tar.gz
           - os: windows-latest
-            target: x86_64-pc-windows-msvc
             archive: zip
           - os: macos-latest
-            target: x86_64-apple-darwin
             archive: tar.gz
           - os: macos-latest
-            target: aarch64-apple-darwin
             archive: tar.gz
 
     runs-on: ${{ matrix.platform.os }}
@@ -36,37 +32,41 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install Rust
+      - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.platform.target }}
+
+      # Linux 上安装 Tauri 依赖
+      - name: Install Linux deps
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.0-dev build-essential curl
 
       - name: Install frontend dependencies
         run: npm install
 
+      - name: Install Tauri CLI globally
+        run: npm install -g @tauri-apps/cli
+
       - name: Build Tauri app
-        run: npx tauri build
+        run: tauri build
 
       - name: Package artifacts
         run: |
           mkdir -p dist
-          # 拷贝生成的二进制/安装包到 dist
           cp -r src-tauri/target/release/bundle/* dist/
-          # 拷贝附加文件
           cp README.md LICENSE* dist/ || true
-          # 打包
-          if [ "${{ matrix.archive }}" = "zip" ]; then
-            7z a app-${{ matrix.platform.target }}.zip ./dist/*
-            mv app-${{ matrix.platform.target }}.zip ./dist/
+
+          if [ "${{ matrix.platform.archive }}" = "zip" ]; then
+            7z a app-${{ matrix.platform.os }}.zip ./dist/*
+            mv app-${{ matrix.platform.os }}.zip ./dist/
           else
-            tar -czvf app-${{ matrix.platform.target }}.tar.gz -C dist .
-            mv app-${{ matrix.platform.target }}.tar.gz ./dist/
+            tar -czvf app-${{ matrix.platform.os }}.tar.gz -C dist .
+            mv app-${{ matrix.platform.os }}.tar.gz ./dist/
           fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.platform.target }}
+          name: ${{ matrix.platform.os }}
           path: dist/*
 
   release:
