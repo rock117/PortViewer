@@ -18,8 +18,6 @@ jobs:
             archive: zip
           - os: macos-latest
             archive: tar.gz
-          - os: macos-latest
-            archive: tar.gz
 
     runs-on: ${{ matrix.platform.os }}
 
@@ -31,9 +29,24 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'  # 添加 npm 缓存
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      # 添加 Rust 缓存
+      - name: Cache Rust dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            src-tauri/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       # Linux 上安装 Tauri 依赖
       - name: Install Linux deps
@@ -41,10 +54,11 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.0-dev build-essential curl
 
       - name: Install frontend dependencies
-        run: npm install
+        run: npm ci  # 使用 ci 而不是 install，更快更可靠
 
-      - name: Install Tauri CLI globally
-        run: npm install -g @tauri-apps/cli
+      # 锁定 Tauri CLI 版本
+      - name: Install Tauri CLI
+        run: npm install -g @tauri-apps/cli@^2.8.4
 
       - name: Build Tauri app
         run: tauri build
@@ -61,7 +75,6 @@ jobs:
           else
             tar -czvf app-${{ matrix.platform.os }}.tar.gz -C dist .
             mv app-${{ matrix.platform.os }}.tar.gz ./dist/
-          fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
