@@ -1,10 +1,10 @@
-name: Tauri App Release
+name: Tauri App Multi-Platform Release
 
 on:
   push:
     tags:
-      - "v*"    # 例如 v1.0.0
-  workflow_dispatch:
+      - "v*"       # 打 tag 时触发，例如 v1.0.0
+  workflow_dispatch:  # 手动触发
 
 jobs:
   build:
@@ -14,12 +14,16 @@ jobs:
         platform:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
+            archive: tar.gz
           - os: windows-latest
             target: x86_64-pc-windows-msvc
+            archive: zip
           - os: macos-latest
             target: x86_64-apple-darwin
+            archive: tar.gz
           - os: macos-latest
             target: aarch64-apple-darwin
+            archive: tar.gz
 
     runs-on: ${{ matrix.platform.os }}
 
@@ -27,7 +31,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -37,31 +41,44 @@ jobs:
         with:
           targets: ${{ matrix.platform.target }}
 
-      - name: Install frontend deps
+      - name: Install frontend dependencies
         run: npm install
 
       - name: Build Tauri app
-        run: npm run tauri build
+        run: npx tauri build
 
-      - name: Upload artifacts
+      - name: Package artifacts
+        run: |
+          mkdir -p dist
+          # 拷贝生成的二进制/安装包到 dist
+          cp -r src-tauri/target/release/bundle/* dist/
+          # 拷贝附加文件
+          cp README.md LICENSE* dist/ || true
+          # 打包
+          if [ "${{ matrix.archive }}" = "zip" ]; then
+            7z a app-${{ matrix.platform.target }}.zip ./dist/*
+            mv app-${{ matrix.platform.target }}.zip ./dist/
+          else
+            tar -czvf app-${{ matrix.platform.target }}.tar.gz -C dist .
+            mv app-${{ matrix.platform.target }}.tar.gz ./dist/
+          fi
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.platform.target }}
-          path: |
-            src-tauri/target/release/bundle/**/*
-            !**/*.deb.symbols
-            !**/*.appimage.zsync
+          path: dist/*
 
   release:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Download artifacts
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
 
-      - name: Create Release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: artifacts/**/*
