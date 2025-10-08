@@ -64,6 +64,7 @@ jobs:
         run: tauri build
 
       - name: Package artifacts
+        shell: bash
         run: |
           mkdir -p dist
           cp -r src-tauri/target/release/bundle/* dist/
@@ -75,6 +76,7 @@ jobs:
           else
             tar -czvf app-${{ matrix.platform.os }}.tar.gz -C dist .
             mv app-${{ matrix.platform.os }}.tar.gz ./dist/
+          fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
