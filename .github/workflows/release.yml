@@ -54,7 +54,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.0-dev build-essential curl
 
       - name: Install frontend dependencies
-        run: npm ci  # 使用 ci 而不是 install，更快更可靠
+        run: npm install  # 使用 ci 而不是 install，更快更可靠
 
       # 锁定 Tauri CLI 版本
       - name: Install Tauri CLI
