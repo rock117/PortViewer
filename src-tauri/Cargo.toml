@@ -1,6 +1,6 @@
 [package]
 name = "portviewer"
-version = "0.1.0"
+version = "1.0.0"
 description = "Cross-platform port viewer - See which processes are using TCP/UDP ports"
 authors = ["you"]
 license = ""
