@@ -74,10 +74,10 @@ jobs:
           else
             echo "Bundle directory not found, checking for executables..."
             # Copy executables directly if bundle doesn't exist
-            if [ -f "src-tauri/target/release/port-viewer" ]; then
-              cp src-tauri/target/release/port-viewer dist/
-            elif [ -f "src-tauri/target/release/port-viewer.exe" ]; then
-              cp src-tauri/target/release/port-viewer.exe dist/
+            if [ -f "src-tauri/target/release/portviewer" ]; then
+              cp src-tauri/target/release/portviewer dist/
+            elif [ -f "src-tauri/target/release/portviewer.exe" ]; then
+              cp src-tauri/target/release/portviewer.exe dist/
             else
               echo "No executable found in target/release/"
               ls -la src-tauri/target/release/ || echo "Release directory doesn't exist"
