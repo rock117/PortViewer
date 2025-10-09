@@ -51,7 +51,7 @@ jobs:
       # Linux 上安装 Tauri 依赖
       - name: Install Linux deps
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.0-dev build-essential curl
+        run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev
 
       - name: Install frontend dependencies
         run: npm install  # 使用 ci 而不是 install，更快更可靠
