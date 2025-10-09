@@ -10,7 +10,7 @@
 
     <!-- Loading State -->
     <div v-if="isLoading" class="flex-1 overflow-hidden">
-      <div class="overflow-auto h-full">
+      <div class="overflow-y-auto  overflow-x-hidden h-full">
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
         <colgroup>
           <col class="w-20"> <!-- Protocol -->
