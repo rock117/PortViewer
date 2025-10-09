@@ -13,14 +13,14 @@
       <div class="overflow-y-auto  overflow-x-hidden h-full">
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
         <colgroup>
-          <col class="w-20"> <!-- Protocol -->
-          <col class="w-32"> <!-- Local Address -->
-          <col class="w-20"> <!-- Local Port -->
-          <col class="w-32"> <!-- Remote Address -->
-          <col class="w-20"> <!-- Remote Port -->
-          <col class="w-24"> <!-- State -->
-          <col class="w-16"> <!-- PID -->
-          <col class="w-auto"> <!-- Process -->
+          <col style="width: 8%;"> <!-- Protocol -->
+          <col style="width: 18%;"> <!-- Local Address -->
+          <col style="width: 8%;"> <!-- Local Port -->
+          <col style="width: 18%;"> <!-- Remote Address -->
+          <col style="width: 8%;"> <!-- Remote Port -->
+          <col style="width: 12%;"> <!-- State -->
+          <col style="width: 8%;"> <!-- PID -->
+          <col style="width: 20%;"> <!-- Process -->
         </colgroup>
         <thead class="table-header">
           <tr>
@@ -95,19 +95,19 @@
     <!-- Table -->
     <div v-else class="flex-1 overflow-hidden">
       <div class="overflow-auto h-full">
-      <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
-        <colgroup>
-          <col class="w-20"> <!-- Protocol -->
-          <col class="w-32"> <!-- Local Address -->
-          <col class="w-20"> <!-- Local Port -->
-          <col class="w-32"> <!-- Remote Address -->
-          <col class="w-20"> <!-- Remote Port -->
-          <col class="w-24"> <!-- State -->
-          <col class="w-16"> <!-- PID -->
-          <col class="w-auto"> <!-- Process -->
-        </colgroup>
-        <thead class="table-header">
-          <tr>
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
+          <colgroup>
+            <col style="width: 8%;"> <!-- Protocol -->
+            <col style="width: 18%;"> <!-- Local Address -->
+            <col style="width: 8%;"> <!-- Local Port -->
+            <col style="width: 18%;"> <!-- Remote Address -->
+            <col style="width: 8%;"> <!-- Remote Port -->
+            <col style="width: 12%;"> <!-- State -->
+            <col style="width: 8%;"> <!-- PID -->
+            <col style="width: 20%;"> <!-- Process -->
+          </colgroup>
+          <thead class="bg-gray-50 dark:bg-slate-600 sticky top-0 z-10">
+            <tr>
             <th @click="sortBy('protocol')" class="px-6 py-3 text-left cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-500 transition-colors">
               <div class="flex items-center space-x-1">
                 <span>Protocol</span>
@@ -159,34 +159,34 @@
           </tr>
         </thead>
         <tbody class="bg-white dark:bg-slate-700 divide-y divide-gray-200 dark:divide-slate-600">
-          <tr v-for="connection in filteredConnections" :key="`${connection.id}`"  class="hover:bg-gray-50 dark:hover:bg-slate-600 transition-all duration-150 ease-in-out">
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 dark:text-blue-400 uppercase">
-              {{ connection.protocol }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">
-              {{ connection.local_address }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">
-              {{ connection.local_port }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">
-              {{ connection.remote_address || '-' }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">
-              {{ connection.remote_port || '-' }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <StatusBadge :state="connection.state" />
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">
-              {{ connection.pid }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-              {{ connection.process_name || 'Unknown' }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            <tr v-for="connection in filteredConnections" :key="`${connection.id}`"  class="hover:bg-gray-50 dark:hover:bg-slate-600 transition-all duration-150 ease-in-out">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 dark:text-blue-400 uppercase">
+                {{ connection.protocol }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">
+                {{ connection.local_address }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">
+                {{ connection.local_port }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">
+                {{ connection.remote_address || '-' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">
+                {{ connection.remote_port || '-' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <StatusBadge :state="connection.state" />
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">
+                {{ connection.pid }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                {{ connection.process_name || 'Unknown' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
