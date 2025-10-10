@@ -19,6 +19,15 @@ A cross-platform desktop application built with Rust and Tauri 2, used to view n
 - **Version Support**: macOS 10.15 (Catalina) or higher
 - **Architecture Support**: x86_64, Apple Silicon (M1/M2)
 
+## 🚀 Download & Installation
+
+### Download
+📥 **Latest Release**: [Download Port Viewer v1.0.0](https://github.com/rock117/PortViewer/releases/tag/app-v1.0.0)
+
+### Installation
+1. **Windows**: Download and run the `.msi` installer
+2. **Linux**: Download the `.AppImage` file and add execute permissions
+3. **macOS**: Download the `.dmg` file and drag to Applications folder
 
 ## 🤝 Contributing
 
@@ -33,7 +42,7 @@ We welcome contributions! Please feel free to submit issues and pull requests.
 
 ## 📜 License
 
-This project is open source. Please refer to the license file for details.
+{{ ... }}
 
 ---
 
