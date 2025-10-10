@@ -165,9 +165,6 @@
     <footer class="bg-white dark:bg-slate-700 border-t border-gray-200 dark:border-slate-600 flex-shrink-0">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div class="flex items-center justify-between">
-          <p class="text-sm text-gray-600 dark:text-gray-300">
-            Port Viewer - Built with Nuxt 3 and Tauri 2
-          </p>
           <div class="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
             <span>Last updated: {{ lastUpdated }}</span>
             <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs">F5</kbd>

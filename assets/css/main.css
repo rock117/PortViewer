@@ -72,3 +72,20 @@
 .status-other {
   @apply text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full text-xs font-medium;
 }
+
+/* Fix sticky header background coverage */
+.table-fixed thead th {
+  background-color: inherit;
+  position: relative;
+}
+
+.table-fixed thead th::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: inherit;
+  z-index: -1;
+}

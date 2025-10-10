@@ -106,51 +106,51 @@
             <col style="width: 8%;"> <!-- PID -->
             <col style="width: 20%;"> <!-- Process -->
           </colgroup>
-          <thead class="bg-gray-50 dark:bg-slate-600 sticky top-0 z-10">
+          <thead class="bg-gray-50 dark:bg-slate-600 sticky top-0 z-20">
             <tr>
-            <th @click="sortBy('protocol')" class="px-6 py-3 text-left cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-500 transition-colors">
+            <th @click="sortBy('protocol')" class="px-6 py-3 text-left cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-500 transition-colors bg-gray-50 dark:bg-slate-600">
               <div class="flex items-center space-x-1">
                 <span>Protocol</span>
                 <SortIcon :column="'protocol'" :sort-config="sortConfig" />
               </div>
             </th>
-            <th @click="sortBy('local_address')" class="px-6 py-3 text-left cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-500 transition-colors">
+            <th @click="sortBy('local_address')" class="px-6 py-3 text-left cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-500 transition-colors bg-gray-50 dark:bg-slate-600">
               <div class="flex items-center space-x-1">
                 <span>Local Address</span>
                 <SortIcon :column="'local_address'" :sort-config="sortConfig" />
               </div>
             </th>
-            <th @click="sortBy('local_port')" class="px-6 py-3 text-left cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-500 transition-colors">
+            <th @click="sortBy('local_port')" class="px-6 py-3 text-left cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-500 transition-colors bg-gray-50 dark:bg-slate-600">
               <div class="flex items-center space-x-1">
                 <span>Local Port</span>
                 <SortIcon :column="'local_port'" :sort-config="sortConfig" />
               </div>
             </th>
-            <th @click="sortBy('remote_address')" class="px-6 py-3 text-left cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-500 transition-colors">
+            <th @click="sortBy('remote_address')" class="px-6 py-3 text-left cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-500 transition-colors bg-gray-50 dark:bg-slate-600">
               <div class="flex items-center space-x-1">
                 <span>Remote Address</span>
                 <SortIcon :column="'remote_address'" :sort-config="sortConfig" />
               </div>
             </th>
-            <th @click="sortBy('remote_port')" class="px-6 py-3 text-left cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-500 transition-colors">
+            <th @click="sortBy('remote_port')" class="px-6 py-3 text-left cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-500 transition-colors bg-gray-50 dark:bg-slate-600">
               <div class="flex items-center space-x-1">
                 <span>Remote Port</span>
                 <SortIcon :column="'remote_port'" :sort-config="sortConfig" />
               </div>
             </th>
-            <th @click="sortBy('state')" class="px-6 py-3 text-left cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-500 transition-colors">
+            <th @click="sortBy('state')" class="px-6 py-3 text-left cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-500 transition-colors bg-gray-50 dark:bg-slate-600">
               <div class="flex items-center space-x-1">
                 <span>State</span>
                 <SortIcon :column="'state'" :sort-config="sortConfig" />
               </div>
             </th>
-            <th @click="sortBy('pid')" class="px-6 py-3 text-left cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-500 transition-colors">
+            <th @click="sortBy('pid')" class="px-6 py-3 text-left cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-500 transition-colors bg-gray-50 dark:bg-slate-600">
               <div class="flex items-center space-x-1">
                 <span>PID</span>
                 <SortIcon :column="'pid'" :sort-config="sortConfig" />
               </div>
             </th>
-            <th @click="sortBy('process_name')" class="px-6 py-3 text-left cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-500 transition-colors">
+            <th @click="sortBy('process_name')" class="px-6 py-3 text-left cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-500 transition-colors bg-gray-50 dark:bg-slate-600">
               <div class="flex items-center space-x-1">
                 <span>Process</span>
                 <SortIcon :column="'process_name'" :sort-config="sortConfig" />
