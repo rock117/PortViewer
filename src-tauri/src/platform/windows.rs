@@ -1,5 +1,5 @@
 use std::ffi::c_void;
-use windows::Win32::Foundation::{FALSE, HANDLE, CloseHandle};
+use windows::Win32::Foundation::{FALSE, CloseHandle};
 use windows::Win32::NetworkManagement::IpHelper::{
     GetExtendedTcpTable, GetExtendedUdpTable, MIB_TCPROW_OWNER_PID, MIB_UDPROW_OWNER_PID,
     TCP_TABLE_OWNER_PID_ALL, UDP_TABLE_OWNER_PID,
