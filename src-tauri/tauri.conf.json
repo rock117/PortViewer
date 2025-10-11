@@ -22,7 +22,8 @@
         "closable": true,
         "center": true,
         "devtools": true,
-        "decorations": false
+        "decorations": false,
+        "titleBarStyle": "Overlay"
       }
     ],
     "security": {

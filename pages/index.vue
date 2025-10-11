@@ -1,7 +1,7 @@
 <template>
   <div class="h-screen bg-gray-50 dark:bg-slate-800 flex flex-col overflow-hidden">
-    <!-- Custom Title Bar -->
-    <div class="h-10 bg-white dark:bg-slate-700 flex items-center justify-between px-4 flex-shrink-0" data-tauri-drag-region>
+    <!-- Custom Title Bar (Windows/Linux only) -->
+    <div v-if="!isMacOS" class="h-10 bg-white dark:bg-slate-700 flex items-center justify-between px-4 flex-shrink-0" data-tauri-drag-region>
       <div class="flex items-center space-x-2" data-tauri-drag-region>
         <img src="/icon.png" alt="Port Viewer" class="w-4 h-4" data-tauri-drag-region />
         <div class="text-sm font-medium text-gray-700 dark:text-gray-300" data-tauri-drag-region>Port Viewer</div>
@@ -44,6 +44,9 @@
         </button>
       </div>
     </div>
+    
+    <!-- macOS Title Bar Spacer -->
+    <div v-if="isMacOS" class="h-8 bg-transparent flex-shrink-0"></div>
     
     <!-- Header -->
     <header class="bg-white dark:bg-slate-700 shadow-sm border-b border-gray-200 dark:border-slate-600 flex-shrink-0">
@@ -220,6 +223,10 @@ const allConnections = ref<ConnectionInfo[]>([])
 const filteredConnections = ref<ConnectionInfo[]>([])
 const refreshIntervalSeconds = ref(5)
 
+// Platform detection
+const isMacOS = ref(false)
+const showLsofInstallPrompt = ref(false)
+
 // Filter connections based on current filters
 const applyFilters = (connections: ConnectionInfo[], filters: FilterState): ConnectionInfo[] => {
   return connections.filter(conn => {
@@ -361,8 +368,13 @@ onMounted(async () => {
   // Initialize theme
   applyTheme()
   
-  // Fetch platform info and connections
+  // Fetch platform info and detect macOS
   await fetchPlatformInfo()
+  if (platformInfo.value && platformInfo.value.os) {
+    isMacOS.value = platformInfo.value.os.toLowerCase().includes('macos') || 
+                   platformInfo.value.os.toLowerCase().includes('darwin')
+  }
+  
   try {
     allConnections.value = await fetchConnections()
     updateFilterConnections()
