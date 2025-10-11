@@ -26,9 +26,15 @@
           title="Maximize"
           data-tauri-drag-region="false"
         >
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1">
-            <rect x="1" y="1" width="8" height="8"/>
+    
+          <svg v-if="isMaximized" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1">
+            <path d="M3 1 L8 1 L8 6 L6 6" />
+            <rect x="1" y="3" width="5" height="5" />
           </svg>
+          <svg v-else width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1">
+            <rect x="1" y="1" width="8" height="8"/>
+          </svg> 
+
         </button>
         
         <!-- Close Button -->
@@ -226,6 +232,7 @@ const refreshIntervalSeconds = ref(5)
 // Platform detection
 const isMacOS = ref(false)
 const showLsofInstallPrompt = ref(false)
+const isMaximized = ref(false)
 
 // Filter connections based on current filters
 const applyFilters = (connections: ConnectionInfo[], filters: FilterState): ConnectionInfo[] => {
@@ -410,18 +417,20 @@ const toggleMaximize = async () => {
     console.log('Toggling maximize...')
     await invoke('toggle_maximize')
     console.log('Window maximize toggled successfully')
+    isMaximized.value = !isMaximized.value
   } catch (err) {
     console.error('Failed to toggle maximize:', err)
     // Fallback: try using window API directly
     try {
       if (window && (window as any).__TAURI__) {
         const appWindow = (window as any).__TAURI__.window.appWindow
-        const isMaximized = await appWindow.isMaximized()
-        if (isMaximized) {
+        const maximized = await appWindow.isMaximized()
+        if (maximized) {
           await appWindow.unmaximize()
         } else {
           await appWindow.maximize()
         }
+        isMaximized.value = !isMaximized.value
       }
     } catch (fallbackErr) {
       console.error('Fallback also failed:', fallbackErr)
